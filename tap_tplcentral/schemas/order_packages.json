@@ -1,0 +1,117 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "order_id": {
+        "type": ["null", "integer"]
+      },
+      "package_id": {
+        "type": ["null", "integer"]
+      },
+      "package_type_id": {
+        "type": ["null", "integer"]
+      },
+      "length": {
+        "type": ["null", "number"]
+      },
+      "width": {
+        "type": ["null", "number"]
+      },
+      "height": {
+        "type": ["null", "number"]
+      },
+      "weight": {
+        "type": ["null", "number"]
+      },
+      "cod_amount": {
+        "type": ["null", "number"]
+      },
+      "insured_amount": {
+        "type": ["null", "number"]
+      },
+      "tracking_number": {
+        "type": ["null", "string"]
+      },
+      "description": {
+        "type": ["null", "string"]
+      },
+      "create_date": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "oversize": {
+        "type": ["null", "boolean"]
+      },
+      "cod": {
+        "type": ["null", "boolean"]
+      },
+      "ucc128": {
+        "type": ["null", "integer"]
+      },
+      "label": {
+        "type": ["null", "string"]
+      },
+      "package_content": {
+        "anyOf": [
+          {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "package_content_id": {
+                    "type": ["null", "integer"]
+                },
+                "package_id": {
+                    "type": ["null", "integer"]
+                },
+                "order_item_id": {
+                    "type": ["null", "integer"]
+                },
+                "receive_item_id": {
+                    "type": ["null", "integer"]
+                },
+                "order_item_pick_exception_id": {
+                    "type": ["null", "integer"]
+                },
+                "qty": {
+                    "type": ["null", "number"]
+                },
+                "lot_number": {
+                    "type": ["null", "string"]
+                },
+                "serial_number": {
+                    "type": ["null", "string"]
+                },
+                "expiration_date": {
+                    "type": ["null", "string"],
+                    "format": "date-time"
+                },
+                "create_date": {
+                    "type": ["null", "string"],
+                    "format": "date-time"
+                },
+                "serial_numbers": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                }
+              }
+            }
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    }
+  }
+  

@@ -1,0 +1,198 @@
+{
+    "totalResults": 1,
+    "_embedded": {
+      "http://api.3plCentral.com/rels/customers/customer": [
+        {
+          "readOnly": {
+            "customerId": 1,
+            "creationDate": "2016-12-25T23:00:00",
+            "deactivated": true
+          },
+          "companyInfo": {
+            "contactId": 1,
+            "companyName": "str",
+            "name": "str",
+            "title": "str",
+            "address1": "str",
+            "address2": "str",
+            "city": "str",
+            "state": "str",
+            "zip": "str",
+            "country": "str",
+            "phoneNumber": "str",
+            "fax": "str",
+            "emailAddress": "str",
+            "dept": "str",
+            "code": "str",
+            "addressStatus": 0
+          },
+          "primaryContact": {
+            "contactId": 1,
+            "companyName": "str",
+            "name": "str",
+            "title": "str",
+            "address1": "str",
+            "address2": "str",
+            "city": "str",
+            "state": "str",
+            "zip": "str",
+            "country": "str",
+            "phoneNumber": "str",
+            "fax": "str",
+            "emailAddress": "str",
+            "dept": "str",
+            "code": "str",
+            "addressStatus": 0
+          },
+          "otherContacts": [
+            {
+              "type": 2,
+              "contactId": 1,
+              "companyName": "str",
+              "name": "str",
+              "title": "str",
+              "address1": "str",
+              "address2": "str",
+              "city": "str",
+              "state": "str",
+              "zip": "str",
+              "country": "str",
+              "phoneNumber": "str",
+              "fax": "str",
+              "emailAddress": "str",
+              "dept": "str",
+              "code": "str",
+              "addressStatus": 0
+            }
+          ],
+          "webSite": "str",
+          "externalId": "str",
+          "groups": [
+            "str"
+          ],
+          "facilities": [
+            {
+              "name": "str",
+              "id": 2
+            }
+          ],
+          "primaryFacilityIdentifier": {
+            "name": "str",
+            "id": 2
+          },
+          "options": {
+            "alerts": {
+              "expirationNotificationThreshold": 1,
+              "notifyShipTo": true,
+              "fromEmailAddress": "str"
+            },
+            "storage": {
+              "fuelSurcharge": 1.0,
+              "setInvoiceDateToXactionConfirmDate": true,
+              "accountingCustomerName": "str",
+              "autoFillChargesOnConfirm": true
+            },
+            "edi": {
+              "custInterchangeId": "str",
+              "custInterchangeIdQual": "str",
+              "threeplInterchangeId": "str",
+              "threeplInterchangeIdQual": "str",
+              "tradingPartnerId": "str"
+            },
+            "receiving": {
+              "purchaseOrders": true,
+              "createMultipleMus": true,
+              "receiveAgainstAsns": 0,
+              "suggestedPutAwayEnabled": true,
+              "requireScacForAsn": true,
+              "autoFillTrackBys": true,
+              "trackLocation": 0,
+              "trackPallets": 0,
+              "trackSupplier": 0,
+              "inheritOriginalReceiptDateOnTransfer": true
+            },
+            "shipping": {
+              "nextMasterBolId": 1,
+              "nextMasterBolIdOverride": 1,
+              "bolNumAsTransNum": true,
+              "autoConfirmOrderOnTrackingUpdate": true,
+              "fulfillmentInvoicing": 0,
+              "orderQueue": true,
+              "requireTrackingNumber": true,
+              "upsAccountNumber": "str",
+              "upsAccountZip": "str",
+              "fedExAccountNumber": "str",
+              "prepopulateCarrierInfo": 0,
+              "packingListLogoUrl": "str",
+              "packingListFooterUrl": "str",
+              "rounduptoFullMU": true
+            },
+            "packaging": {
+              "smallParcelUsps3rdParty": "str",
+              "ucc128ManufacturersId": 2,
+              "useVendorIdOnBol": true,
+              "spsCloseOnUpdate": true,
+              "smallParcelReturnShippingCost": true,
+              "smallParcelReturnFedExService": "str",
+              "smallParcelUspsReturnType": "str",
+              "smallParcelReturnUpsService": "str",
+              "smallParcelReturnDefaultChecked": true,
+              "smallParcelHighVolumeDefaultChecked": true,
+              "smallParcelHighVolumeZplBatched": true,
+              "smallParcelReferences": "str",
+              "smallParcelIntlDutyBillType": "str",
+              "smallParcelCustomizeDuties": true,
+              "smallParcelDutiesAndTaxes": "str",
+              "smallParcelCreatePackagesOnFind": true,
+              "smallParcelRateShoppingCarrierIds": "str",
+              "smallParcelRateShoppingLogic": "str"
+            },
+            "otherSystemBehaviors": {
+              "flexFields": true,
+              "requireAttachedDocuments": true
+            },
+            "userInterface": {
+              "hideLocationSelectedList": true,
+              "excludeLocationsWithZeroInventory": true,
+              "autoCheckAutoReallocateOnReceive": true,
+              "transactionConfirmInvoiceCreateDefault": 0,
+              "mobileReceiptQuantityOneDefault": true,
+              "reallocateAtPickTime": true,
+              "brandingImageId": 6,
+              "dashboard": true
+            },
+            "savedElements": {
+              "orders": {
+                "defs": [
+                  {
+                    "name": "str",
+                    "required": true
+                  }
+                ],
+                "itemDefs": [
+                  {
+                    "name": "str",
+                    "required": true
+                  }
+                ]
+              },
+              "receivers": {
+                "defs": [
+                  {
+                    "name": "str",
+                    "required": true
+                  }
+                ],
+                "itemDefs": [
+                  {
+                    "name": "str",
+                    "required": true
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }

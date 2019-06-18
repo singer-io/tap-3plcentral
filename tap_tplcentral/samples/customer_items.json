@@ -1,0 +1,168 @@
+{
+    "totalResults": 1,
+    "_embedded": {
+      "http://api.3plCentral.com/rels/customers/item": [
+        {
+          "readOnly": {
+            "customerIdentifier": {
+              "externalId": "str",
+              "name": "str",
+              "id": 3
+            },
+            "itemId": 1,
+            "creationDate": "2016-12-25T23:00:00",
+            "lastModifiedDate": "2016-12-25T23:00:00",
+            "deactivated": true,
+            "lastPriceChange": "2016-12-25T23:00:00"
+          },
+          "itemId": 1,
+          "sku": "str",
+          "upc": "str",
+          "description": "str",
+          "description2": "str",
+          "inventoryCategory": "str",
+          "classificationIdentifier": {
+            "name": "str",
+            "id": 2
+          },
+          "nmfc": "str",
+          "cost": 1.0,
+          "price": 1.0,
+          "temperature": 1.0,
+          "accountRef": "str",
+          "countryOfManufacture": "str",
+          "harmonizedCode": "str",
+          "qualifierRenamers": [
+            {
+              "qualifier": "str",
+              "renames": "str"
+            }
+          ],
+          "kit": {
+            "materialNotes": "str",
+            "components": [
+              {
+                "itemIdentifier": {
+                  "sku": "str",
+                  "id": 2
+                },
+                "qualifier": "str",
+                "qty": 1.0,
+                "nonSkuMaterial": "str"
+              }
+            ]
+          },
+          "options": {
+            "inventoryUnit": {
+              "unitIdentifier": {
+                "name": "str",
+                "id": 2
+              },
+              "minimumStock": 1.0,
+              "maximumStock": 1.0,
+              "reorderQuantity": 1.0,
+              "inventoryMethod": 1
+            },
+            "secondaryUnit": {
+              "inventoryAlso": true,
+              "unitIdentifier": {
+                "name": "str",
+                "id": 2
+              },
+              "inventoryUnitsPerUnit": 2.0
+            },
+            "packageUnit": {
+              "imperial": {
+                "netWeight": 1.0,
+                "length": 1.0,
+                "width": 1.0,
+                "height": 1.0,
+                "weight": 1.0
+              },
+              "metric": {
+                "netWeight": 1.0,
+                "length": 1.0,
+                "width": 1.0,
+                "height": 1.0,
+                "weight": 1.0
+              },
+              "upc": "str",
+              "unitIdentifier": {
+                "name": "str",
+                "id": 2
+              },
+              "inventoryUnitsPerUnit": 2.0
+            },
+            "trackBys": {
+              "trackLotNumber": 0,
+              "trackSerialNumber": 0,
+              "trackExpirationDate": 0,
+              "trackCost": 0,
+              "outboundMobileSerialization": 0,
+              "autoHoldExpirationDaysThreshold": 1
+            },
+            "pallets": {
+              "typeIdentifier": {
+                "name": "str",
+                "id": 2
+              },
+              "tie": 1.0,
+              "high": 1.0,
+              "qty": 1.0,
+              "imperial": {
+                "length": 1.0,
+                "width": 1.0,
+                "height": 1.0,
+                "weight": 1.0
+              },
+              "metric": {
+                "length": 1.0,
+                "width": 1.0,
+                "height": 1.0,
+                "weight": 1.0
+              },
+              "upc": "str"
+            },
+            "hazMat": {
+              "isHazMat": true,
+              "id": "str",
+              "shippingName": "str",
+              "hazardClass": "str",
+              "packingGroup": "str",
+              "flashPoint": "str",
+              "labelCode": "str",
+              "flag": "str"
+            },
+            "directedPutAway": {
+              "locationZones": "str",
+              "palletLocationZones": "str",
+              "overAllocLocationZones": "str",
+              "preferredLocationIdentifier": {
+                "nameKey": {
+                  "facilityIdentifier": {
+                    "name": "str",
+                    "id": 2
+                  },
+                  "name": "str"
+                },
+                "id": 1
+              },
+              "forceIntoPreferredLocation": true,
+              "allowMixedItemStorage": true,
+              "allowMixedLotStorage": true,
+              "mixedExpirationDaysThreshold": 1
+            },
+            "daysBetweenCounts": 1,
+            "autoHoldOnReceive": true
+          },
+          "_embedded": {
+            "item": [
+              {
+                "qualifier": "str"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }

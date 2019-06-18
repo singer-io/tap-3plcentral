@@ -1,0 +1,18 @@
+{
+    "totalResults": 1,
+    "summaries": [
+      {
+        "itemIdentifier": {
+          "sku": "str",
+          "id": 2
+        },
+        "qualifier": "str",
+        "totalReceived": 2.0,
+        "allocated": 3.0,
+        "available": 4.0,
+        "onHold": 5.0,
+        "onHand": 6.0,
+        "facilityId": 7
+      }
+    ]
+  }

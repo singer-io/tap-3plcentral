@@ -1,0 +1,44 @@
+{
+    "_embedded": {
+      "http://api.3plCentral.com/rels/orders/package": [
+        {
+          "packageId": 1,
+          "packageTypeId": 2,
+          "length": 1.0,
+          "width": 1.0,
+          "height": 1.0,
+          "weight": 1.0,
+          "codAmount": 1.0,
+          "insuredAmount": 1.0,
+          "trackingNumber": "str",
+          "description": "str",
+          "createDate": "2016-12-25T23:00:00",
+          "readOnly": {
+            "oversize": true,
+            "cod": true,
+            "ucc128": 1,
+            "label": "QA=="
+          },
+          "_embedded": {
+            "http://api.3plCentral.com/rels/orders/packagecontent": [
+              {
+                "packageContentId": 1,
+                "packageId": 2,
+                "orderItemId": 3,
+                "receiveItemId": 4,
+                "orderItemPickExceptionId": 1,
+                "qty": 5.0,
+                "lotNumber": "str",
+                "serialNumber": "str",
+                "expirationDate": "2016-12-25T23:00:00",
+                "createDate": "2016-12-25T23:00:00",
+                "serialNumbers": [
+                  "str"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }

@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "item_identifier": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "sku": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "qualifier": {
+      "type": ["null", "string"]
+    },
+    "total_received": {
+      "type": ["null", "number"]
+    },
+    "allocated": {
+      "type": ["null", "number"]
+    },
+    "available": {
+      "type": ["null", "number"]
+    },
+    "on_hold": {
+      "type": ["null", "number"]
+    },
+    "on_hand": {
+      "type": ["null", "number"]
+    },
+    "facility_id": {
+      "type": ["null", "integer"]
+    }
+  }
+}

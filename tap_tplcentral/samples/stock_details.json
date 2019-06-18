@@ -1,0 +1,64 @@
+{
+    "totalResults": 1,
+    "_embedded": {
+      "item": [
+        {
+          "receiveItemId": 1,
+          "itemIdentifier": {
+            "sku": "str",
+            "id": 2
+          },
+          "description": "str",
+          "qualifier": "str",
+          "received": 4.0,
+          "available": 5.0,
+          "isOnHold": true,
+          "quarantined": true,
+          "onHand": 8.0,
+          "lotNumber": "str",
+          "serialNumber": "str",
+          "expirationDate": "2016-12-25T23:00:00",
+          "cost": 1.0,
+          "supplierIdentifier": {
+            "name": "str",
+            "id": 2
+          },
+          "locationIdentifier": {
+            "nameKey": {
+              "facilityIdentifier": {
+                "name": "str",
+                "id": 2
+              },
+              "name": "str"
+            },
+            "id": 1
+          },
+          "palletIdentifier": {
+            "nameKey": {
+              "facilityIdentifier": {
+                "name": "str",
+                "id": 2
+              },
+              "name": "str"
+            },
+            "id": 1
+          },
+          "inventoryUnitOfMeasureIdentifier": {
+            "name": "str",
+            "id": 2
+          },
+          "receiverId": 11,
+          "receivedDate": "2016-12-25T23:00:00",
+          "referenceNum": "str",
+          "poNum": "str",
+          "trailerNumber": "str",
+          "savedElements": [
+            {
+              "name": "str",
+              "value": "str"
+            }
+          ]
+        }
+      ]
+    }
+  }

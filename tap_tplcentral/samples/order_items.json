@@ -1,0 +1,115 @@
+{
+    "_embedded": {
+      "http://api.3plCentral.com/rels/orders/item": [
+        {
+          "readOnly": {
+            "orderItemId": 1,
+            "fullyAllocated": true,
+            "unitIdentifier": {
+              "name": "str",
+              "id": 2
+            },
+            "secondaryUnitIdentifier": {
+              "name": "str",
+              "id": 2
+            },
+            "estimatedQty": 1.0,
+            "estimatedSecondaryQty": 1.0,
+            "isOrderQtySecondary": true,
+            "allocations": [
+              {
+                "receiveItemId": 1,
+                "qty": 2.0,
+                "properlyPickedPrimary": 3.0,
+                "properlyPickedSecondary": 4.0,
+                "loadedOut": true,
+                "detail": {
+                  "itemTraits": {
+                    "itemIdentifier": {
+                      "sku": "str",
+                      "id": 2
+                    },
+                    "qualifier": "str",
+                    "lotNumber": "str",
+                    "serialNumber": "str",
+                    "expirationDate": "2016-12-25T23:00:00",
+                    "palletIdentifier": {
+                      "nameKey": {
+                        "facilityIdentifier": {
+                          "name": "str",
+                          "id": 2
+                        },
+                        "name": "str"
+                      },
+                      "id": 1
+                    }
+                  },
+                  "locationIdentifier": {
+                    "nameKey": {
+                      "facilityIdentifier": {
+                        "name": "str",
+                        "id": 2
+                      },
+                      "name": "str"
+                    },
+                    "id": 1
+                  }
+                }
+              }
+            ],
+            "pickExceptions": [
+              {
+                "orderId": 1,
+                "orderItemId": 2,
+                "orderItemPickExceptionId": 3,
+                "pickedPrimaryQty": 4.0,
+                "pickedSecondaryQty": 5.0,
+                "reason": "str",
+                "receiveItemId": 7,
+                "locationId": 8,
+                "lotNumber": "str",
+                "serialNumber": "str",
+                "expirationDate": "2016-12-25T23:00:00"
+              }
+            ]
+          },
+          "itemIdentifier": {
+            "sku": "str",
+            "id": 2
+          },
+          "qualifier": "str",
+          "externalId": "str",
+          "qty": 1.0,
+          "secondaryQty": 1.0,
+          "lotNumber": "str",
+          "serialNumber": "str",
+          "expirationDate": "2016-12-25T23:00:00",
+          "weightImperial": 1.0,
+          "weightMetric": 1.0,
+          "notes": "str",
+          "fulfillInvSalePrice": 1.0,
+          "fulfillInvDiscountPct": 1.0,
+          "fulfillInvDiscountAmt": 1.0,
+          "fulfillInvNote": "str",
+          "savedElements": [
+            {
+              "name": "str",
+              "value": "str"
+            }
+          ],
+          "proposedAllocations": [
+            {
+              "receiveItemId": 1,
+              "qty": 2.0
+            }
+          ],
+          "orderItemInPackages": [
+            {
+              "packageNumber": 1,
+              "quantity": 2.0
+            }
+          ]
+        }
+      ]
+    }
+  }

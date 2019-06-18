@@ -1,0 +1,86 @@
+{
+    "totalResults": 1,
+    "_embedded": {
+      "item": [
+        {
+          "receiverId": 1,
+          "receivedDate": "2016-12-25T23:00:00",
+          "receiveItemId": 3,
+          "customerIdentifier": {
+            "externalId": "str",
+            "name": "str",
+            "id": 3
+          },
+          "facilityIdentifier": {
+            "name": "str",
+            "id": 2
+          },
+          "itemIdentifier": {
+            "sku": "str",
+            "id": 2
+          },
+          "itemDescription": "str",
+          "qualifier": "str",
+          "inventoryUnitOfMeasureIdentifier": {
+            "name": "str",
+            "id": 2
+          },
+          "secondaryUnitOfMeasureIdentifier": {
+            "name": "str",
+            "id": 2
+          },
+          "inventoryUnitsPerSecondaryUnit": 1.0,
+          "receivedQty": 6.0,
+          "onHandQty": 7.0,
+          "availableQty": 8.0,
+          "onHoldQty": 9.0,
+          "secondaryReceivedQty": 1.0,
+          "secondaryOnHandQty": 1.0,
+          "secondaryAvailableQty": 1.0,
+          "secondaryOnHoldQty": 1.0,
+          "weightImperial": 1.0,
+          "weightImperialOnHand": 1.0,
+          "weightImperialAvailable": 1.0,
+          "weightMetric": 1.0,
+          "weightMetricOnHand": 1.0,
+          "weightMetricAvailable": 1.0,
+          "lotNumber": "str",
+          "serialNumber": "str",
+          "expirationDate": "2016-12-25T23:00:00",
+          "cost": 1.0,
+          "supplierIdentifier": {
+            "name": "str",
+            "id": 2
+          },
+          "locationIdentifier": {
+            "nameKey": {
+              "facilityIdentifier": {
+                "name": "str",
+                "id": 2
+              },
+              "name": "str"
+            },
+            "id": 1
+          },
+          "palletIdentifier": {
+            "nameKey": {
+              "facilityIdentifier": {
+                "name": "str",
+                "id": 2
+              },
+              "name": "str"
+            },
+            "id": 1
+          },
+          "onHold": true,
+          "onHoldReason": "str",
+          "onHoldDate": "2016-12-25T23:00:00",
+          "onHoldUserIdentifier": {
+            "name": "str",
+            "id": 2
+          },
+          "quarantined": true
+        }
+      ]
+    }
+  }

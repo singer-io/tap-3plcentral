@@ -1,0 +1,398 @@
+{
+    "totalResults": 1,
+    "_embedded": {
+      "http://api.3plCentral.com/rels/orders/order": [
+        {
+          "readOnly": {
+            "orderId": 1,
+            "asnCandidate": 2,
+            "routeCandidate": 3,
+            "fullyAllocated": true,
+            "importModuleId": 1,
+            "exportModuleIds": "str",
+            "deferNotification": true,
+            "isClosed": true,
+            "processDate": "2016-12-25T23:00:00",
+            "pickDoneDate": "2016-12-25T23:00:00",
+            "pickTicketPrintDate": "2016-12-25T23:00:00",
+            "packDoneDate": "2016-12-25T23:00:00",
+            "labelsExported": true,
+            "invoiceExportedDate": "2016-12-25T23:00:00",
+            "invoiceDeliveredDate": "2016-12-25T23:00:00",
+            "loadedState": 0,
+            "loadOutDoneDate": "2016-12-25T23:00:00",
+            "reallocatedAfterPickTicketDate": "2016-12-25T23:00:00",
+            "routeSent": true,
+            "asnSentDate": "2016-12-25T23:00:00",
+            "asnSent": true,
+            "pkgsExported": true,
+            "batchIdentifier": {
+              "nameKey": {
+                "customerIdentifier": {
+                  "externalId": "str",
+                  "name": "str",
+                  "id": 3
+                },
+                "name": "str"
+              },
+              "id": 1
+            },
+            "packages": [
+              {
+                "packageId": 1,
+                "packageTypeId": 2,
+                "length": 1.0,
+                "width": 1.0,
+                "height": 1.0,
+                "weight": 1.0,
+                "codAmount": 1.0,
+                "insuredAmount": 1.0,
+                "trackingNumber": "str",
+                "description": "str",
+                "createDate": "2016-12-25T23:00:00",
+                "oversize": true,
+                "cod": true,
+                "ucc128": 1,
+                "label": "QA==",
+                "packageContents": [
+                  {
+                    "packageContentId": 1,
+                    "packageId": 2,
+                    "orderItemId": 3,
+                    "receiveItemId": 4,
+                    "orderItemPickExceptionId": 1,
+                    "qty": 5.0,
+                    "lotNumber": "str",
+                    "serialNumber": "str",
+                    "expirationDate": "2016-12-25T23:00:00",
+                    "createDate": "2016-12-25T23:00:00",
+                    "serialNumbers": [
+                      "str"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "outboundSerialNumbers": [
+              {
+                "itemIdentifier": {
+                  "sku": "str",
+                  "id": 2
+                },
+                "qualifier": "str",
+                "serialNumbers": [
+                  "str"
+                ]
+              }
+            ],
+            "parcelLabelType": 0,
+            "customerIdentifier": {
+              "externalId": "str",
+              "name": "str",
+              "id": 3
+            },
+            "facilityIdentifier": {
+              "name": "str",
+              "id": 2
+            },
+            "warehouseTransactionSourceType": 0,
+            "transactionEntryType": 0,
+            "importChannelIdentifier": {
+              "name": "str",
+              "id": 2
+            },
+            "creationDate": "2016-12-25T23:00:00",
+            "createdByIdentifier": {
+              "name": "str",
+              "id": 2
+            },
+            "lastModifiedDate": "2016-12-25T23:00:00",
+            "lastModifiedByIdentifier": {
+              "name": "str",
+              "id": 2
+            },
+            "status": 0
+          },
+          "referenceNum": "str",
+          "description": "str",
+          "poNum": "str",
+          "externalId": "str",
+          "earliestShipDate": "2016-12-25T23:00:00",
+          "shipCancelDate": "2016-12-25T23:00:00",
+          "notes": "str",
+          "numUnits1": 1.0,
+          "unit1Identifier": {
+            "name": "str",
+            "id": 2
+          },
+          "numUnits2": 1.0,
+          "unit2Identifier": {
+            "name": "str",
+            "id": 2
+          },
+          "totalWeight": 1.0,
+          "totalVolume": 1.0,
+          "billingCode": "str",
+          "asnNumber": "str",
+          "upsServiceOptionCharge": 1.0,
+          "upsTransportationCharge": 1.0,
+          "addFreightToCod": true,
+          "upsIsResidential": true,
+          "exportChannelIdentifier": {
+            "name": "str",
+            "id": 2
+          },
+          "routePickupDate": "2016-12-25T23:00:00",
+          "shippingNotes": "str",
+          "masterBillOfLadingId": "str",
+          "invoiceNumber": "str",
+          "fulfillInvInfo": {
+            "fulfillInvShippingAndHandling": 1.0,
+            "fulfillInvTax": 1.0,
+            "fulfillInvDiscountCode": "str",
+            "fulfillInvDiscountAmount": 1.0,
+            "fulfillInvGiftMessage": "str"
+          },
+          "routingInfo": {
+            "isCod": true,
+            "isInsurance": true,
+            "requiresDeliveryConf": true,
+            "requiresReturnReceipt": true,
+            "scacCode": "str",
+            "carrier": "str",
+            "mode": "str",
+            "account": "str",
+            "shipPointZip": "str",
+            "capacityTypeIdentifier": {
+              "name": "str",
+              "id": 2
+            },
+            "loadNumber": "str",
+            "billOfLading": "str",
+            "trackingNumber": "str",
+            "trailerNumber": "str",
+            "sealNumber": "str",
+            "doorNumber": "str",
+            "pickupDate": "2016-12-25T23:00:00"
+          },
+          "billing": {
+            "billingCharges": [
+              {
+                "chargeType": 1,
+                "subtotal": 1.0,
+                "details": [
+                  {
+                    "warehouseTransactionPriceCalcId": 1,
+                    "numUnits": 2.0,
+                    "chargeLabel": "str",
+                    "unitDescription": "str",
+                    "chargePerUnit": 5.0,
+                    "glAcctNum": "str",
+                    "sku": "str",
+                    "ptItem": "str",
+                    "ptItemDescription": "str",
+                    "ptArAcct": "str",
+                    "systemGenerated": true
+                  }
+                ]
+              }
+            ]
+          },
+          "shipTo": {
+            "retailerInfo": {
+              "nameKey": {
+                "customerIdentifier": {
+                  "externalId": "str",
+                  "name": "str",
+                  "id": 3
+                },
+                "name": "str",
+                "number": "str"
+              },
+              "id": 1
+            },
+            "sameAs": 0,
+            "retailerId": 1,
+            "isQuickLookup": true,
+            "contactId": 1,
+            "companyName": "str",
+            "name": "str",
+            "title": "str",
+            "address1": "str",
+            "address2": "str",
+            "city": "str",
+            "state": "str",
+            "zip": "str",
+            "country": "str",
+            "phoneNumber": "str",
+            "fax": "str",
+            "emailAddress": "str",
+            "dept": "str",
+            "code": "str",
+            "addressStatus": 0
+          },
+          "soldTo": {
+            "sameAs": 0,
+            "retailerId": 1,
+            "isQuickLookup": true,
+            "contactId": 1,
+            "companyName": "str",
+            "name": "str",
+            "title": "str",
+            "address1": "str",
+            "address2": "str",
+            "city": "str",
+            "state": "str",
+            "zip": "str",
+            "country": "str",
+            "phoneNumber": "str",
+            "fax": "str",
+            "emailAddress": "str",
+            "dept": "str",
+            "code": "str",
+            "addressStatus": 0
+          },
+          "billTo": {
+            "sameAs": 0,
+            "retailerId": 1,
+            "isQuickLookup": true,
+            "contactId": 1,
+            "companyName": "str",
+            "name": "str",
+            "title": "str",
+            "address1": "str",
+            "address2": "str",
+            "city": "str",
+            "state": "str",
+            "zip": "str",
+            "country": "str",
+            "phoneNumber": "str",
+            "fax": "str",
+            "emailAddress": "str",
+            "dept": "str",
+            "code": "str",
+            "addressStatus": 0
+          },
+          "savedElements": [
+            {
+              "name": "str",
+              "value": "str"
+            }
+          ],
+          "_embedded": {
+            "http://api.3plCentral.com/rels/orders/item": [
+              {
+                "readOnly": {
+                  "orderItemId": 1,
+                  "fullyAllocated": true,
+                  "unitIdentifier": {
+                    "name": "str",
+                    "id": 2
+                  },
+                  "secondaryUnitIdentifier": {
+                    "name": "str",
+                    "id": 2
+                  },
+                  "estimatedQty": 1.0,
+                  "estimatedSecondaryQty": 1.0,
+                  "isOrderQtySecondary": true,
+                  "allocations": [
+                    {
+                      "receiveItemId": 1,
+                      "qty": 2.0,
+                      "properlyPickedPrimary": 3.0,
+                      "properlyPickedSecondary": 4.0,
+                      "loadedOut": true,
+                      "detail": {
+                        "itemTraits": {
+                          "itemIdentifier": {
+                            "sku": "str",
+                            "id": 2
+                          },
+                          "qualifier": "str",
+                          "lotNumber": "str",
+                          "serialNumber": "str",
+                          "expirationDate": "2016-12-25T23:00:00",
+                          "palletIdentifier": {
+                            "nameKey": {
+                              "facilityIdentifier": {
+                                "name": "str",
+                                "id": 2
+                              },
+                              "name": "str"
+                            },
+                            "id": 1
+                          }
+                        },
+                        "locationIdentifier": {
+                          "nameKey": {
+                            "facilityIdentifier": {
+                              "name": "str",
+                              "id": 2
+                            },
+                            "name": "str"
+                          },
+                          "id": 1
+                        }
+                      }
+                    }
+                  ],
+                  "pickExceptions": [
+                    {
+                      "orderId": 1,
+                      "orderItemId": 2,
+                      "orderItemPickExceptionId": 3,
+                      "pickedPrimaryQty": 4.0,
+                      "pickedSecondaryQty": 5.0,
+                      "reason": "str",
+                      "receiveItemId": 7,
+                      "locationId": 8,
+                      "lotNumber": "str",
+                      "serialNumber": "str",
+                      "expirationDate": "2016-12-25T23:00:00"
+                    }
+                  ]
+                },
+                "itemIdentifier": {
+                  "sku": "str",
+                  "id": 2
+                },
+                "qualifier": "str",
+                "externalId": "str",
+                "qty": 1.0,
+                "secondaryQty": 1.0,
+                "lotNumber": "str",
+                "serialNumber": "str",
+                "expirationDate": "2016-12-25T23:00:00",
+                "weightImperial": 1.0,
+                "weightMetric": 1.0,
+                "notes": "str",
+                "fulfillInvSalePrice": 1.0,
+                "fulfillInvDiscountPct": 1.0,
+                "fulfillInvDiscountAmt": 1.0,
+                "fulfillInvNote": "str",
+                "savedElements": [
+                  {
+                    "name": "str",
+                    "value": "str"
+                  }
+                ],
+                "proposedAllocations": [
+                  {
+                    "receiveItemId": 1,
+                    "qty": 2.0
+                  }
+                ],
+                "orderItemInPackages": [
+                  {
+                    "packageNumber": 1,
+                    "quantity": 2.0
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
