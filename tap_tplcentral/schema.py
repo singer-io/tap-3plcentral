@@ -6,18 +6,15 @@ FIELD_METADATA = {}
 
 PKS = {
     'customers': ['customer_id'],
-    'customer_items': ['customer_id', 'item_id'],
+    'customer_items': ['item_id'],
+    'customer_stock_details': ['receive_item_id'],
     'orders': ['order_id'],
     'order_items': ['order_item_id'],
-    'inventory': ['receive_item_id'],
-    'customer_stock_details': ['receive_item_id']
+    'order_packages': ['package_id'],
+    'inventory': ['receive_item_id']
 }
 
-#  ADD LATER
-#   'facilities': ['facility_id'],
-#   'facility_locations': ['facility_id', 'location_id'],
-#   'inventory': ['customer_id', 'facility_id', 'location_id', 'item_id'],
-#   'stock_details': ['customer_id', 'facility_id', 'location_id', 'item_id']
+# Add later:     'stock_summaries': ['receive_item_id']
 
 def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)

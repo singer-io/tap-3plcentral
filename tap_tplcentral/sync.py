@@ -100,7 +100,7 @@ def sync_endpoint(client,
                   bookmark_field,
                   parent=None,
                   parent_id=None):
-    bookmark_path = bookmark_path + ['datetime']
+    bookmark_path = bookmark_path + [bookmark_field]
     last_datetime = get_bookmark(state, bookmark_path, start_date)
     ids = []
     max_bookmark_field = last_datetime
