@@ -17,6 +17,7 @@ REQUIRED_CONFIG_KEYS = [
     'client_secret',
     'tpl_key',
     'user_login_id',
+    'user_agent',
     'base_url'
 ]
 
