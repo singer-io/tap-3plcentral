@@ -320,7 +320,7 @@ def sync(client, config, catalog, state):
         'inventory': {
             'path': 'inventory',
             'params': {
-                'pgsiz': 500
+                'pgsiz': 500,
                 'sort': 'receivedDate'
             },
             'data_path': 'ResourceList',
