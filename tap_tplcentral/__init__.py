@@ -13,12 +13,15 @@ from tap_tplcentral.sync import sync
 LOGGER = singer.get_logger()
 
 REQUIRED_CONFIG_KEYS = [
+    'base_url',
     'client_id',
     'client_secret',
     'tpl_key',
     'user_login_id',
     'user_agent',
-    'base_url'
+    'customer_id',
+    'facility_id',
+    'start_date'
 ]
 
 def do_discover(client):
@@ -34,13 +37,14 @@ def main():
 
     parsed_args = singer.utils.parse_args(REQUIRED_CONFIG_KEYS)
 
-    with TPLClient(base_url=parsed_args.config['base_url'],
-                   client_id=parsed_args.config['client_id'],
-                   client_secret=parsed_args.config['client_secret'],
-                   tpl_key=parsed_args.config['tpl_key'],
-                   user_login_id=parsed_args.config['user_login_id'],
-                   user_agent=parsed_args.config['user_agent']) as client:
-        
+    with TPLClient(
+        base_url=parsed_args.config['base_url'],
+        client_id=parsed_args.config['client_id'],
+        client_secret=parsed_args.config['client_secret'],
+        tpl_key=parsed_args.config['tpl_key'],
+        user_login_id=parsed_args.config['user_login_id'],
+        user_agent=parsed_args.config['user_agent']) as client:
+
         if parsed_args.discover:
             do_discover(client)
         elif parsed_args.catalog:

@@ -41,8 +41,19 @@ class TPLAPIError(TPLBaseError):
 class TPLClient(object):
     """Generic API for TPL"""
 
-    def __init__(self, base_url, auth_path='AuthServer/api/Token', client_id=None, client_secret=None, tpl_key=None,
-                 grant_type='client_credentials', user_login_id=None, user_agent=None, session=None, verify_ssl=True):
+    def __init__(
+        self,
+        base_url='https://secure-wms.com',
+        auth_path='AuthServer/api/Token',
+        client_id=None,
+        client_secret=None,
+        tpl_key=None,
+        grant_type='client_credentials',
+        user_login_id=None,
+        user_agent=None,
+        session=None,
+        verify_ssl=True):
+        
         """
         Create an instance, get access token and update the headers
         :param base_url: base url to the TPL instance.
@@ -65,15 +76,15 @@ class TPLClient(object):
             payload = {}
             api.post("orders", data=payload)
         """
-        self._base_url = base_url
-        self._auth_path = auth_path
-        self._client_id = client_id
-        self._client_secret = client_secret
-        self._tpl_key = tpl_key
-        self._grant_type = grant_type
-        self._user_login_id = user_login_id
-        self._user_agent = user_agent
-        self._verify_ssl = verify_ssl
+        self.__base_url = base_url
+        self.__auth_path = auth_path
+        self.__client_id = client_id
+        self.__client_secret = client_secret
+        self.__tpl_key = tpl_key
+        self.__grant_type = grant_type
+        self.__user_login_id = user_login_id
+        self.__user_agent = user_agent
+        self.__verify_ssl = verify_ssl
 
         if session is None:
             self.client = requests.Session()
@@ -81,11 +92,18 @@ class TPLClient(object):
             headers = {
                 "Authorization": "%s %s" % (response['token_type'], response['access_token']),
                 "Content-Type": "application/hal+json",
-                "User-Agent": self._user_agent
+                "User-Agent": self.__user_agent
             }
             self.client.headers.update(headers)
         else:
             self.client = session
+
+    def __enter__(self):
+        self._get_access_token()
+        return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        self.client.close()
 
     @backoff.on_exception(backoff.expo,
                           Server5xxError,
@@ -95,21 +113,21 @@ class TPLClient(object):
         """Get access token from server and returns it.
         :return: access token from the server.
         """
-        key_string = "%s:%s" % (self._client_id, self._client_secret)
+        key_string = "%s:%s" % (self.__client_id, self.__client_secret)
         key_bytes = key_string.encode("utf-8")
         auth = base64.b64encode(key_bytes)
         authorization = 'Basic {}'.format(auth.decode('utf-8'))
         headers = {
             "Content-Type": "application/json",
             "Authorization": authorization,
-            "User-Agent": self._user_agent
+            "User-Agent": self.__user_agent
         }
         data = {
-            "grant_type": self._grant_type,
-            "tpl": "{%s}" % (self._tpl_key,),
-            "user_login_id": self._user_login_id
+            "grant_type": self.__grant_type,
+            "tpl": "{%s}" % (self.__tpl_key,),
+            "user_login_id": self.__user_login_id
         }
-        return self.post(self._auth_path, data=data, add_headers=headers)
+        return self.post(self.__auth_path, data=data, add_headers=headers)
 
     def _parse_error(self, content):
         """Take the content and return as it is.
@@ -151,7 +169,7 @@ class TPLClient(object):
                           max_tries=5,
                           factor=2)
     @utils.ratelimit(400, 60)
-    def _execute(self, url, method, data=None, add_headers=None, **kwargs):
+    def _execute(self, url, method, data=None, add_headers=None, endpoint=None):
         """Perform the HTTP request and return the response back.
         :param url: full url to call.
         :param method: GET, POST.
@@ -162,11 +180,8 @@ class TPLClient(object):
         if add_headers is None:
             add_headers = {}
 
-        if 'endpoint' in kwargs:
-            endpoint = kwargs['endpoint']
-            del kwargs['endpoint']
-        else:
-            endpoint = None
+        if endpoint is None:
+            endpoint = url
 
         request_headers = self.client.headers.copy()
         request_headers.update(add_headers)
@@ -175,14 +190,14 @@ class TPLClient(object):
                 method,
                 url,
                 data=data,
-                verify=self._verify_ssl,
+                verify=self.__verify_ssl,
                 headers=request_headers) 
             timer.tags[metrics.Tag.http_status_code] = response.status_code
             self._check_status_code(response.status_code, response.content)
         
         return response.json()
 
-    def get(self, resource_path, resource_id=None, querystring=None, add_headers=None, **kwargs):
+    def get(self, resource_path, resource_id=None, querystring=None, add_headers=None, endpoint=None):
         """Retrieve (GET) a resource.
         :param resource_path: path of resource to retrieve.
         :param resource_id: optional resource id to retrieve.
@@ -190,24 +205,28 @@ class TPLClient(object):
         :param add_headers: additional headers merged into instance's headers.
         :return: response in json format.
         """
-        full_url = "%s/%s" % (self._base_url, resource_path)
+        if endpoint is None:
+            endpoint = resource_path
+        full_url = "%s/%s" % (self.__base_url, resource_path)
         if resource_id is not None:
             full_url += "/%s" % (resource_id,)
         if querystring is not None:
             full_url += "?%s" % (querystring,)
-        response = self._execute(full_url, 'GET', add_headers=add_headers, **kwargs)
+        response = self._execute(full_url, 'GET', add_headers=add_headers, endpoint=endpoint)
         return response
     
 
-    def post(self, resource_path, data=None, add_headers=None, **kwargs):
+    def post(self, resource_path, data=None, add_headers=None, endpoint=None):
         """Add (POST) a resource.
         :param resource_path: path of resource to create.
         :param data: full payload as dict of new resource.
         :param add_headers: additional headers merged into instance's headers.
         :return: response in json format.
         """
+        if endpoint is None:
+            endpoint = resource_path
         if data is None:
             raise ValueError('Data Undefined.')
-        full_url = "%s/%s" % (self._base_url, resource_path)
-        response = self._execute(full_url, 'POST', data=json.dumps(data), add_headers=add_headers, **kwargs)
+        full_url = "%s/%s" % (self.__base_url, resource_path)
+        response = self._execute(full_url, 'POST', data=json.dumps(data), add_headers=add_headers, endpoint=endpoint)
         return response
