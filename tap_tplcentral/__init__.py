@@ -44,6 +44,11 @@ def main():
         user_login_id=parsed_args.config['user_login_id'],
         user_agent=parsed_args.config['user_agent']) as client:
 
+        if parsed_args.state:
+            state = parsed_args.state
+        else:
+            state = {}
+
         if parsed_args.discover:
             do_discover()
         elif parsed_args.catalog:
@@ -51,7 +56,7 @@ def main():
                 client=client,
                 config=parsed_args.config,
                 catalog=parsed_args.catalog,
-                state=parsed_args.state
+                state=state
                 )
 
 if __name__ == '__main__':
