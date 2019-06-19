@@ -3,9 +3,8 @@
 import sys
 import json
 import argparse
-
 import singer
-from singer import metadata
+from singer import metadata, utils
 from tap_tplcentral.client import TPLClient
 from tap_tplcentral.discover import discover
 from tap_tplcentral.sync import sync
@@ -24,7 +23,7 @@ REQUIRED_CONFIG_KEYS = [
     'start_date'
 ]
 
-def do_discover(client):
+def do_discover():
 
     LOGGER.info('Starting discover')
     catalog = discover()
@@ -46,12 +45,14 @@ def main():
         user_agent=parsed_args.config['user_agent']) as client:
 
         if parsed_args.discover:
-            do_discover(client)
+            do_discover()
         elif parsed_args.catalog:
-            sync(client=client,
-                 config=parse_args.config,
-                 catalog=parsed_args.catalog,
-                 state=parsed_args.state)
+            sync(
+                client=client,
+                config=parsed_args.config,
+                catalog=parsed_args.catalog,
+                state=parsed_args.state
+                )
 
 if __name__ == '__main__':
     main()

@@ -4,6 +4,7 @@ import time
 import random
 import tarfile
 import math
+import urllib.parse
 from datetime import datetime, timedelta
 
 import requests
@@ -44,7 +45,7 @@ def process_records(catalog,
             # If child object, add parent_id to record
             if parent_id and parent:
                 record[parent + '_id'] = parent_id
-            if bookmark_field:
+            if bookmark_field and bookmark_field in record:
                 if max_bookmark_field is None or \
                     record[bookmark_field] > max_bookmark_field:
                     max_bookmark_field = record[bookmark_field]
@@ -53,8 +54,8 @@ def process_records(catalog,
                     record = transformer.transform(record,
                                                    schema,
                                                    stream_metadata)
-                if bookmark_field:
-                    if isinstance(record[bookmark_field], int):
+                if bookmark_field and bookmark_field in record:
+                    if type(record[bookmark_field]) is int:
                         singer.write_record(stream_name, record)
                         counter.increment()
                     elif validate_datetime(record[bookmark_field]) and validate_datetime(last_datetime):
