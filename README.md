@@ -72,17 +72,17 @@ This tap:
 
     For Sync mode:
     ```bash
-    > tap-tplcentral --config tap_config.json --catalog catalog.json >> state.json
+    > tap-tplcentral --config tap_config.json --catalog catalog.json > state.json
     > tail -1 state.json > state.json.tmp && mv state.json.tmp state.json
     ```
     To load to json files to verify outputs:
     ```bash
-    > tap-tplcentral --config tap_config.json --catalog catalog.json | target-json >> state.json
+    > tap-tplcentral --config tap_config.json --catalog catalog.json | target-json > state.json
     > tail -1 state.json > state.json.tmp && mv state.json.tmp state.json
     ```
     To pseudo-load to [Stitch Import API](https://github.com/singer-io/target-stitch) with dry run:
     ```bash
-    > tap-tplcentral --config tap_config.json --catalog catalog.json | target-stitch --config target_config.json --dry-run >> state.json
+    > tap-tplcentral --config tap_config.json --catalog catalog.json | target-stitch --config target_config.json --dry-run > state.json
     > tail -1 state.json > state.json.tmp && mv state.json.tmp state.json
     ```
 

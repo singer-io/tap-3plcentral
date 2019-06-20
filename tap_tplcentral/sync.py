@@ -1,38 +1,22 @@
-import re
-import json
-import time
-import random
-import tarfile
+from datetime import datetime
 import math
-import urllib.parse
-from datetime import datetime, timedelta
-import pendulum
-import furl
-
-import requests
 import singer
-from singer import metrics, metadata, Transformer
+from singer import metrics, metadata, Transformer, utils
 from tap_tplcentral.transform import transform_json, convert
 
 LOGGER = singer.get_logger()
 
-
-def validate_datetime(date_text):
-    try:
-        if date_text != datetime.strptime(date_text, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%dT%H:%M:%SZ"):
-            raise ValueError
-        return True
-    except ValueError:
-        return False
 
 def write_schema(catalog, stream_name):
     stream = catalog.get_stream(stream_name)
     schema = stream.schema.to_dict()
     singer.write_schema(stream_name, schema, stream.key_properties)
 
+
 def process_records(catalog,
                     stream_name,
                     records,
+                    time_extracted,
                     bookmark_field=None,
                     bookmark_type=None,
                     max_bookmark_value=None,
@@ -43,6 +27,7 @@ def process_records(catalog,
     stream = catalog.get_stream(stream_name)
     schema = stream.schema.to_dict()
     stream_metadata = metadata.to_map(stream.metadata)
+
     with metrics.record_counter(stream_name) as counter:
         for record in records:
             # If child object, add parent_id to record
@@ -51,8 +36,8 @@ def process_records(catalog,
 
             # Reset max_bookmark_value to new value if higher
             if bookmark_field and (bookmark_field in record):
-                if max_bookmark_value is None or \
-                    record[bookmark_field] > max_bookmark_value:
+                if (max_bookmark_value is None) or \
+                    (record[bookmark_field] > max_bookmark_value):
                     max_bookmark_value = record[bookmark_field]
 
             # Transform record for Singer.io
@@ -65,19 +50,18 @@ def process_records(catalog,
                 if bookmark_type == 'integer':
                     # Keep only records whose bookmark is after the last_integer
                     if record[bookmark_field] >= last_integer:
-                        singer.write_record(stream_name, record)
+                        singer.write_record(stream_name, record, time_extracted=time_extracted)
                         counter.increment()
                 elif bookmark_type == 'datetime':
-                    if validate_datetime(record[bookmark_field]) and validate_datetime(last_datetime):
-                        # Keep only records whose bookmark is after the last_datetime
-                        if datetime.strptime(record[bookmark_field], "%Y-%m-%dT%H:%M:%SZ") >= \
-                            datetime.strptime(last_datetime, "%Y-%m-%dT%H:%M:%SZ"):
-                            singer.write_record(stream_name, record)
-                            counter.increment()
+                    # Keep only records whose bookmark is after the last_datetime
+                    if record[bookmark_field] >= last_datetime:
+                        singer.write_record(stream_name, record, time_extracted=time_extracted)
+                        counter.increment()
             else:
-                singer.write_record(stream_name, record)
+                singer.write_record(stream_name, record, time_extracted=time_extracted)
                 counter.increment()
         return max_bookmark_value
+
 
 def get_bookmark(state, stream, default):
     if (state is None) or ('bookmarks' not in state):
@@ -113,13 +97,12 @@ def sync_endpoint(client,
 
     last_datetime = None
     last_integer = None
-    if bookmark_type == 'datetime':
-        last_date_raw = get_bookmark(state, stream_name, start_date)
-        last_datetime = pendulum.parse(last_date_raw).to_datetime_string()
-        max_bookmark_value = last_datetime
-    elif bookmark_type == 'integer':
+    if bookmark_type == 'integer':
         last_integer = get_bookmark(state, stream_name, 0)
         max_bookmark_value = last_integer
+    else:
+        last_datetime = get_bookmark(state, stream_name, start_date)
+        max_bookmark_value = last_datetime
 
     ids = []
 
@@ -164,13 +147,12 @@ def sync_endpoint(client,
             'since: {}, '.format(last_datetime) if bookmark_query_field else ''))
 
         # Squash params to query-string params
-        f = furl.furl('')
-        f.args = params
-        querystring = f.url
-        
-        LOGGER.info('querystring = {}'.format(querystring))
-        LOGGER.info('path = {}'.format(path))
-        LOGGER.info('stream_name  = {}'.format(stream_name))
+        querystring = '&'.join(['%s=%s' % (key, value) for (key, value) in params.items()])
+
+        # For testing/debugging:
+        # LOGGER.info('stream_name = {}'.format(stream_name))
+        # LOGGER.info('path = {}'.format(path))
+        # LOGGER.info('querystring = {}'.format(querystring))
 
         # Get data, API request
         data = client.get(
@@ -181,16 +163,20 @@ def sync_endpoint(client,
         # Transform raw data with transform_json from transform.py
         transformed_data = transform_json(data, data_key)[convert(data_key)]
 
-        max_bookmark_value = process_records(catalog=catalog,
-                                             stream_name=stream_name,
-                                             records=[transform(record, id_field) for record in transformed_data],
-                                             bookmark_field=bookmark_field,
-                                             bookmark_type=bookmark_type,
-                                             max_bookmark_value=max_bookmark_value,
-                                             last_datetime=last_datetime,
-                                             last_integer=last_integer,
-                                             parent=parent,
-                                             parent_id=parent_id)
+        time_extracted = utils.now()
+
+        max_bookmark_value = process_records(
+            catalog=catalog,
+            stream_name=stream_name,
+            records=[transform(rec, id_field) for rec in transformed_data],
+            time_extracted=time_extracted,
+            bookmark_field=bookmark_field,
+            bookmark_type=bookmark_type,
+            max_bookmark_value=max_bookmark_value,
+            last_datetime=last_datetime,
+            last_integer=last_integer,
+            parent=parent,
+            parent_id=parent_id)
 
         if bookmark_field:
             write_bookmark(state,
@@ -198,14 +184,18 @@ def sync_endpoint(client,
                            max_bookmark_value)
 
         # set page and total_pages for pagination
-        total_results = data['TotalResults']
-        total_pages = math.ceil(total_results / page_size)
+        if 'TotalResults' in data:
+            if data['TotalResults'] < page_size:
+                total_pages = 1
+            else:
+                total_results = data['TotalResults']
+                total_pages = math.ceil(total_results / page_size)
+        else:
+            total_pages = 1
         LOGGER.info('{} - Synced - page: {}, total pages: {}'.format(
             stream_name,
             page,
             total_pages))
-        if page == 0:
-            break
         page = page + 1
 
     return ids
@@ -220,7 +210,6 @@ def sync_stream(client,
                 endpoint_config,
                 bookmark_path=None,
                 id_path=None,
-                parent=None,
                 parent_id=None):
     if not bookmark_path:
         bookmark_path = [stream_name]
@@ -228,21 +217,22 @@ def sync_stream(client,
         id_path = []
 
     path = endpoint_config.get('path').format(*id_path)
-    stream_ids = sync_endpoint(client=client,
-                                catalog=catalog,
-                                state=state,
-                                start_date=start_date,
-                                stream_name=stream_name,
-                                path=path,
-                                data_key=endpoint_config.get('data_path', stream_name),
-                                static_params=endpoint_config.get('params', {}),
-                                bookmark_path=bookmark_path,
-                                bookmark_query_field=endpoint_config.get('bookmark_query_field'),
-                                bookmark_field=endpoint_config.get('bookmark_field'),
-                                bookmark_type=endpoint_config.get('bookmark_type'),
-                                id_field=endpoint_config.get('id_field'),
-                                parent=endpoint_config.get('parent'),
-                                parent_id=parent_id)
+    stream_ids = sync_endpoint(
+        client=client,
+        catalog=catalog,
+        state=state,
+        start_date=start_date,
+        stream_name=stream_name,
+        path=path,
+        data_key=endpoint_config.get('data_path', stream_name),
+        static_params=endpoint_config.get('params', {}),
+        bookmark_path=bookmark_path,
+        bookmark_query_field=endpoint_config.get('bookmark_query_field'),
+        bookmark_field=endpoint_config.get('bookmark_field'),
+        bookmark_type=endpoint_config.get('bookmark_type'),
+        id_field=endpoint_config.get('id_field'),
+        parent=endpoint_config.get('parent'),
+        parent_id=parent_id)
 
     if endpoint_config.get('store_ids'):
         id_bag[stream_name] = stream_ids
@@ -251,19 +241,20 @@ def sync_stream(client,
     if children:
         for child_stream_name, child_endpoint_config in children.items():
             for _id in stream_ids:
-                sync_stream(client=client,
-                            catalog=catalog,
-                            state=state,
-                            start_date=start_date,
-                            id_bag=id_bag,
-                            stream_name=child_stream_name,
-                            endpoint_config=child_endpoint_config,
-                            bookmark_path=bookmark_path + [_id, child_stream_name],
-                            id_path=id_path + [_id],
-                            parent=child_endpoint_config.get('parent'),
-                            parent_id=_id)
+                sync_stream(
+                    client=client,
+                    catalog=catalog,
+                    state=state,
+                    start_date=start_date,
+                    id_bag=id_bag,
+                    stream_name=child_stream_name,
+                    endpoint_config=child_endpoint_config,
+                    bookmark_path=bookmark_path + [_id, child_stream_name],
+                    id_path=id_path + [_id],
+                    parent_id=_id)
 
 
+# Review catalog and make a list of selected streams
 def get_selected_streams(catalog):
     selected_streams = set()
     for stream in catalog.streams:
@@ -273,10 +264,12 @@ def get_selected_streams(catalog):
             selected_streams.add(stream.tap_stream_id)
     return list(selected_streams)
 
-def update_current_stream(state, stream_name):
-    state['current_stream'] = stream_name
-    singer.write_state(state)
 
+# Review last_stream (last currently syncing stream), if any,
+#  and continue where it left off in the selected streams.
+# Or begin from the beginning, if no last_stream, and sync
+#  all selected steams.
+# Returns should_sync_stream (true/false) and last_stream.
 def should_sync_stream(selected_streams, last_stream, stream_name):
     if last_stream == stream_name or last_stream is None:
         if last_stream is not None:
@@ -298,8 +291,7 @@ def sync(client, config, catalog, state):
     if not selected_streams:
         return
     
-    last_stream = state.get('current_stream')
-
+    last_stream = singer.get_currently_syncing(state)
     id_bag = {}
 
     endpoints = {
@@ -334,12 +326,12 @@ def sync(client, config, catalog, state):
                         'pgsiz': 100,
                         'customerid': customer_id,
                         'facilityid': facility_id,
-                        'sort': 'ReadOnly.lastModifiedDate'
+                        'sort': 'receivedDate'
                     },
                     'data_path': 'ResourceList',
-                    'bookmark_field': 'last_modified_date',
+                    'bookmark_field': 'received_date',
                     'bookmark_type': 'datetime',
-                    'bookmark_query_field': 'ReadOnly.lastModifiedDate',
+                    'bookmark_query_field': 'receivedDate',
                     'id_field': 'receive_item_id',
                     'parent': 'customer'
                 }
@@ -403,7 +395,6 @@ def sync(client, config, catalog, state):
             },
             'data_path': 'Summaries'
         }
-
     }
 
     for stream_name, endpoint_config in endpoints.items():
@@ -411,11 +402,12 @@ def sync(client, config, catalog, state):
                                                         last_stream,
                                                         stream_name)
         if should_stream:
-            update_current_stream(state, stream_name)
-            sync_stream(client,
-                        catalog,
-                        state,
-                        start_date,
-                        id_bag,
-                        stream_name,
-                        endpoint_config)
+            singer.set_currently_syncing(state, stream_name)
+            sync_stream(
+                client=client,
+                catalog=catalog,
+                state=state,
+                start_date=start_date,
+                id_bag=id_bag,
+                stream_name=stream_name,
+                endpoint_config=endpoint_config)

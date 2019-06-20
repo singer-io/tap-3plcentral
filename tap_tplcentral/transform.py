@@ -35,21 +35,6 @@ def convert_json(this_json):
     return out
 
 
-# Copy path/_embedded sub-nodes up to path
-def denest_embedded_nodes(this_json, path=None):
-    if path is None:
-        return this_json
-    i = 0
-    nodes = ['attachments', "address", "chats", "emails", "phones", "social_profiles", "websites"]
-    for record in this_json[path]:
-        if "_embedded" in record:
-            for node in nodes:
-                if node in record['_embedded']:
-                    this_json[path][i][node] = this_json[path][i]['_embedded'][node]    
-        i = i + 1
-    return this_json
-
-
 # Remove all _links and _embedded nodes from json
 def remove_embedded_links(this_json):
     if not isinstance(this_json, (dict, list)):
@@ -60,7 +45,29 @@ def remove_embedded_links(this_json):
             if kk not in {'_embedded', '_links'}}
 
 
+# Copy path/_embedded sub-nodes up to path
+def denest_embedded_readonly_nodes(this_json, path=None):
+    if path is None:
+        return this_json
+    i = 0
+    nodes = ['item']
+    for record in this_json[path]:
+        if "ReadOnly" in record:
+            for key in record['ReadOnly']:
+                record[key] = record['ReadOnly'][key]
+            del record['ReadOnly']
+        if "_embedded" in record:
+            for node in nodes:
+                if node in record['_embedded']:
+                    this_json[path][i][node] = this_json[path][i]['_embedded'][node]    
+                i = i + 1
+            del record['embedded']
+    return this_json
+
+
+# Run all transforms: denests _embedded and ReadOnly, removes _embedded/_links, and
+#  converts camelCase to snake_case for fieldname keys.
 def transform_json(this_json, path):
     transformed_json = convert_json(remove_embedded_links(\
-                    denest_embedded_nodes(this_json, path)))
+                    denest_embedded_readonly_nodes(this_json, path)))
     return transformed_json
