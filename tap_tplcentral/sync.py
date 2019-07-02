@@ -307,7 +307,7 @@ def sync(client, config, catalog, state):
             'id_field': 'customer_id',
             'store_ids': True,
             'children': {
-               'customer_items': {
+               'sku_items': {
                     'path': 'customers/{}/items',
                     'params': {
                         'pgsiz': 100,
@@ -320,7 +320,7 @@ def sync(client, config, catalog, state):
                     'id_field': 'item_id',
                     'parent': 'customer'
                 },
-                'customer_stock_details': {
+                'stock_details': {
                     'path': 'inventory/stockdetails',
                     'params': {
                         'pgsiz': 100,
