@@ -59,19 +59,20 @@ def process_records(catalog, #pylint: disable=too-many-branches
                                                schema,
                                                stream_metadata)
 
-                if bookmark_field and (bookmark_field in record):
-                    if bookmark_type == 'integer':
-                        # Keep only records whose bookmark is after the last_integer
-                        if record[bookmark_field] >= last_integer:
-                            write_record(stream_name, record, time_extracted=time_extracted)
-                            counter.increment()
-                    elif bookmark_type == 'datetime':
-                        last_dttm = transformer._transform_datetime(last_datetime)
-                        bookmark_dttm = transformer._transform_datetime(record[bookmark_field])
-                        # Keep only records whose bookmark is after the last_datetime
-                        if bookmark_dttm >= last_dttm:
-                            write_record(stream_name, record, time_extracted=time_extracted)
-                            counter.increment()
+                if bookmark_field:
+                    if bookmark_field in record:
+                        if bookmark_type == 'integer':
+                            # Keep only records whose bookmark is after the last_integer
+                            if record[bookmark_field] >= last_integer:
+                                write_record(stream_name, record, time_extracted=time_extracted)
+                                counter.increment()
+                        elif bookmark_type == 'datetime':
+                            last_dttm = transformer._transform_datetime(last_datetime)
+                            bookmark_dttm = transformer._transform_datetime(record[bookmark_field])
+                            # Keep only records whose bookmark is after the last_datetime
+                            if bookmark_dttm >= last_dttm:
+                                write_record(stream_name, record, time_extracted=time_extracted)
+                                counter.increment()
                 else:
                     write_record(stream_name, record, time_extracted=time_extracted)
                     counter.increment()
@@ -172,6 +173,7 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
         # Transform raw data with transform_json from transform.py
         ids = [] # Initialize the ids list
         transformed_data = transform_json(data, data_key)[convert(data_key)]
+        # LOGGER.info('transformed_data = {}'.format(transformed_data))
 
         # If transformed_data is a single-record dict (like shop endpoint), add it to a list
         if isinstance(transformed_data, dict):
@@ -369,7 +371,7 @@ def sync(client, config, catalog, state, start_date):
         'inventory': {
             'path': 'inventory',
             'params': {
-                'pgsiz': 500,
+                'pgsiz': 200,
                 'sort': 'receivedDate'
             },
             'data_path': 'ResourceList',

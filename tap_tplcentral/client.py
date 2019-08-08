@@ -7,9 +7,12 @@ import urllib.parse
 import base64
 import backoff
 import requests
+import singer
 from requests.exceptions import ConnectionError
 from singer import metrics
 from singer import utils
+
+LOGGER = singer.get_logger()
 
 
 class Server5xxError(Exception):
@@ -183,6 +186,7 @@ class TPLClient(object):
         if endpoint is None:
             endpoint = url
 
+        LOGGER.info('URL = {}'.format(url))
         request_headers = self.client.headers.copy()
         request_headers.update(add_headers)
         with metrics.http_request_timer(endpoint) as timer:

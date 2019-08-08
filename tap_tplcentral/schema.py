@@ -21,7 +21,7 @@ STREAMS = {
     'inventory': {
         'key_properties': ['receive_item_id'],
         'replication_method': 'INCREMENTAL',
-        'replication_keys': ['receive_date']
+        'replication_keys': ['received_date']
     },
     'orders': {
         'key_properties': ['order_id'],

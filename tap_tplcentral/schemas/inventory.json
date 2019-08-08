@@ -5,9 +5,12 @@
 		"receiver_id": {
 			"type": ["null", "integer"]
 		},
-		"receive_date": {
+		"received_date": {
 			"type": ["null", "string"],
 			"format": "date-time"
+		},
+		"receive_item_id": {
+			"type": ["null", "integer"]
 		},
 		"customer_identifier": {
 			"type": ["null", "object"],
