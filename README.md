@@ -9,13 +9,10 @@ This tap:
 - Pulls raw data from the [3PLCentral REST API](http://api.3plcentral.com/rels/)
 - Extracts the following resources:
   - [Customers](http://api.3plcentral.com/rels/customers/customers)
-    - [Customer Items (SKUs)](http://api.3plcentral.com/rels/customers/items)
-    - [Customer Stock Details](http://api.3plcentral.com/rels/inventory/stockdetails)
+    - [SKU Items](http://api.3plcentral.com/rels/customers/items)
+    - [Stock Details](http://api.3plcentral.com/rels/inventory/stockdetails)
   - [Inventory](http://api.3plcentral.com/rels/inventory/inventory)
-  - [Orders](http://api.3plcentral.com/rels/orders/orders)
-    - [Order Items](http://api.3plcentral.com/rels/orders/items)
-    - [Order Packages](http://api.3plcentral.com/rels/orders/packages)
-  - [Stock Summaries](http://api.3plcentral.com/rels/inventory/stocksummaries)
+  - [Orders (with Order Items and Packages)](http://api.3plcentral.com/rels/orders/orders)
 - Outputs the schema for each resource
 - Incrementally pulls data based on the input state
 
@@ -24,7 +21,6 @@ This tap:
 1. Install
 
     Clone this repository, and then install using setup.py. We recommend using a virtualenv:
-
     ```bash
     > virtualenv -p python3 venv
     > source venv/bin/activate

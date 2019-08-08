@@ -425,7 +425,7 @@ def sync(client, config, catalog, state, start_date):
         'orders': {
             'path': 'orders',
             'params': {
-                'pgsiz': 300,
+                'pgsiz': 20,
                 'detail': 'All',
                 'itemdetail': 'All',
                 'sort': 'ReadOnly.lastModifiedDate'
