@@ -27,14 +27,6 @@ STREAMS = {
         'key_properties': ['order_id'],
         'replication_method': 'INCREMENTAL',
         'replication_keys': ['last_modified_date']
-    },
-    'order_items': {
-        'key_properties': ['order_item_id'],
-        'replication_method': 'FULL_TABLE'
-    },
-    'order_packages': {
-        'key_properties': ['package_id'],
-        'replication_method': 'FULL_TABLE'
     }
 }
 
