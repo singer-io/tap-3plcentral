@@ -425,34 +425,16 @@ def sync(client, config, catalog, state, start_date):
         'orders': {
             'path': 'orders',
             'params': {
-                'pgsiz': 500,
-                'detail': 'BillingDetails,SavedElements,Contacts,ProposedBilling,OutboundSerialNumbers',
+                'pgsiz': 300,
+                'detail': 'All',
+                'itemdetail': 'All',
                 'sort': 'ReadOnly.lastModifiedDate'
             },
             'data_path': 'ResourceList',
             'bookmark_field': 'last_modified_date',
             'bookmark_type': 'datetime',
             'bookmark_query_field': 'ReadOnly.lastModifiedDate',
-            'id_fields': ['order_id'],
-            'store_ids': True,
-            'children': {
-               'order_items': {
-                    'path': 'orders/{}/items',
-                    'params': {
-                        'detail': 'All'
-                    },
-                    'data_path': 'ResourceList',
-                    'id_fields': ['order_item_id'],
-                    'parent': 'order'
-                },
-                'order_packages': {
-                    'path': 'orders/{}/packages',
-                    'params': {},
-                    'data_path': 'ResourceList',
-                    'id_fields': ['package_id'],
-                    'parent': 'order'
-                },
-            }
+            'id_fields': ['order_id']
         }
     }
 
