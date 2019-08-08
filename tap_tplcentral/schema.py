@@ -1,18 +1,41 @@
 import os
 import json
+from singer import metadata
 
-SCHEMAS = {}
-FIELD_METADATA = {}
-
-PKS = {
-    'customers': ['customer_id'],
-    'sku_items': ['item_id'],
-    'stock_details': ['receive_item_id'],
-    'orders': ['order_id'],
-    'order_items': ['order_item_id'],
-    'order_packages': ['package_id'],
-    'inventory': ['receive_item_id'],
-    'stock_summaries': ['receive_item_id']
+# Reference: https://github.com/singer-io/getting-started/blob/master/docs/DISCOVERY_MODE.md#Metadata
+STREAMS = {
+    'customers': {
+        'key_properties': ['customer_id'],
+        'replication_method': 'FULL_TABLE'
+    },
+    'sku_items': {
+        'key_properties': ['item_id'],
+        'replication_method': 'INCREMENTAL',
+        'replication_keys': ['last_modified_date']
+    },
+    'stock_details': {
+        'key_properties': ['receive_item_id'],
+        'replication_method': 'INCREMENTAL',
+        'replication_keys': ['received_date']
+    },
+    'inventory': {
+        'key_properties': ['receive_item_id'],
+        'replication_method': 'INCREMENTAL',
+        'replication_keys': ['receive_date']
+    },
+    'orders': {
+        'key_properties': ['order_id'],
+        'replication_method': 'INCREMENTAL',
+        'replication_keys': ['last_modified_date']
+    },
+    'order_items': {
+        'key_properties': ['order_item_id'],
+        'replication_method': 'FULL_TABLE'
+    },
+    'order_packages': {
+        'key_properties': ['package_id'],
+        'replication_method': 'FULL_TABLE'
+    }
 }
 
 
@@ -20,36 +43,24 @@ def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
 def get_schemas():
-    global SCHEMAS, FIELD_METADATA
+    schemas = {}
+    field_metadata = {}
 
-    if SCHEMAS:
-        return SCHEMAS, FIELD_METADATA
+    for stream_name, stream_metadata in STREAMS.items():
+        schema_path = get_abs_path('schemas/{}.json'.format(stream_name))
+        with open(schema_path) as file:
+            schema = json.load(file)
+        schemas[stream_name] = schema
+        mdata = metadata.new()
 
-    schemas_path = get_abs_path('schemas')
+        # Documentation: https://github.com/singer-io/getting-started/blob/master/docs/DISCOVERY_MODE.md#singer-python-helper-functions
+        # Reference: https://github.com/singer-io/singer-python/blob/master/singer/metadata.py#L25-L44
+        mdata = metadata.get_standard_metadata(
+            schema=schema,
+            key_properties=stream_metadata.get('key_properties', None),
+            valid_replication_keys=stream_metadata.get('replication_keys', None),
+            replication_method=stream_metadata.get('replication_method', None)
+        )
+        field_metadata[stream_name] = mdata
 
-    file_names = [f for f in os.listdir(schemas_path)
-                  if os.path.isfile(os.path.join(schemas_path, f))]
-
-    for file_name in file_names:
-        stream_name = file_name[:-5]
-        with open(os.path.join(schemas_path, file_name)) as data_file:
-            schema = json.load(data_file)
-            
-        SCHEMAS[stream_name] = schema
-        pk = PKS[stream_name]
-
-        metadata = []
-        for prop, json_schema in schema['properties'].items():
-            if prop in pk:
-                inclusion = 'automatic'
-            else:
-                inclusion = 'available'
-            metadata.append({
-                'metadata': {
-                    'inclusion': inclusion
-                },
-                'breadcrumb': ['properties', prop]
-            })
-        FIELD_METADATA[stream_name] = metadata
-
-    return SCHEMAS, FIELD_METADATA
+    return schemas, field_metadata

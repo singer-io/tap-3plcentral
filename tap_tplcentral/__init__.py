@@ -56,7 +56,8 @@ def main():
                 client=client,
                 config=parsed_args.config,
                 catalog=parsed_args.catalog,
-                state=state
+                state=state,
+                start_date=parsed_args.config['start_date']
                 )
 
 if __name__ == '__main__':
