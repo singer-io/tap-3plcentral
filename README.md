@@ -16,6 +16,63 @@ This tap:
 - Outputs the schema for each resource
 - Incrementally pulls data based on the input state
 
+## Streams
+[**customers**](http://api.3plcentral.com/rels/customers/customers)
+- Endpoint: https://secure-wms.com/customers
+- Primary keys: customer_id
+- Foreign keys: None
+- Replication strategy: Full table (one record)
+  - Filter: customer_id (from config.json)
+- Transformations: Fields camelCase to snake_case, De-nest and remove nodes (ReadOnly, embedded, links).
+- Children: sku_items, stock_details
+
+[**sku_items**](http://api.3plcentral.com/rels/customers/items)
+- Endpoint: https://secure-wms.com/customers/[customer_id]/items
+- Primary keys: item_id
+- Foreign keys: customer_id (customers)
+- Replication strategy: Incremental (query filtered)
+  - Sort by: ReadOnly.lastModifiedDate ASC
+  - Bookmark query field: ReadOnly.lastModifiedDate
+  - Bookmark: last_modified_date (date-time)
+- Transformations: Fields camelCase to snake_case, De-nest and remove nodes (ReadOnly, embedded, links).
+- Parent: customer
+
+[**stock_details**](http://api.3plcentral.com/rels/inventory/stockdetails)
+- Endpoint: https://secure-wms.com/inventory/stockdetails
+- Primary keys: receive_item_id
+- Foreign keys: customer_id (customers), item_identifier > id (sku_items), supplier_identifier > id (suppliers), location_identifier > id (locations), facility_identifier > id (facilities), receiver_id (receivers)
+- Replication strategy: Incremental (query filtered)
+  - Filters: customer_id, facility_id (from config.json)
+  - Sort by: receivedDate ASC
+  - Bookmark query field: receivedDate
+  - Bookmark: received_date (date-time)
+- Transformations: Fields camelCase to snake_case, De-nest and remove nodes (ReadOnly, embedded, links).
+- Parent: customer
+
+[**inventory**](http://api.3plcentral.com/rels/inventory/inventory)
+- Endpoint: https://secure-wms.com/inventory
+- Primary keys: receive_item_id
+- Foreign keys: customer_id (customers), receive_item_id (stock_details), item_identifier > id (sku_items), supplier_identifier > id (suppliers), location_identifier > id (locations), facility_identifier > id (facilities), pallet_identifier > id (pallets), receiver_id (receivers)
+- Replication strategy: Incremental (query filtered)
+  - Filters: customer_id, facility_id (from config.json)
+  - Sort by: receivedDate ASC
+  - Bookmark query field: receivedDate
+  - Bookmark: received_date (date-time)
+- Transformations: Fields camelCase to snake_case, De-nest and remove nodes (ReadOnly, embedded, links).
+
+[**orders w/ order_items and packages**](http://api.3plcentral.com/rels/orders/orders)
+- Endpoint: https://secure-wms.com/orders
+- Primary keys: order_id (also: order_item_id and package_id in list arrays sub-elements)
+- Foreign keys: receive_item_id (inventory, stock_details), customer_identifier > id (customers), item_identifier > id (sku_items), location_identifier > id (locations), facility_identifier > id (facilities), pallet_identifier > id (pallets)
+- Replication strategy: Incremental (query filtered)
+  - Filters: detail = All, itemDetail = All
+  - Sort by: ReadOnly.lastModifiedDate ASC
+  - Bookmark query field: ReadOnly.lastModifiedDate
+  - Bookmark: last_modified_date (date-time)
+- Transformations: Fields camelCase to snake_case, De-nest and remove nodes (ReadOnly, embedded, links).
+
+**Endpoints to be added later**: facilities, locations, pallets, suppliers, receivers (initial development client did not have access to these endpoints)
+
 ## Quick Start
 
 1. Install
