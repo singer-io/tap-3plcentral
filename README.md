@@ -4,8 +4,9 @@ This is a [Singer](https://singer.io) tap that produces JSON-formatted data
 following the [Singer
 spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 
-This tap:
+[**3PLCentral**](https://3plcentral.com/about-us/) is a leading cloud-based Warehouse Management System (WMS) used by distributors/wholesalers and their partner customers and suppliers.
 
+**This tap:**
 - Pulls raw data from the [3PLCentral REST API](http://api.3plcentral.com/rels/)
 - Extracts the following resources:
   - [Customers](http://api.3plcentral.com/rels/customers/customers)
