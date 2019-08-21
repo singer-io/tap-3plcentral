@@ -542,7 +542,8 @@
 										"type": ["null", "integer"]
 									},
 									"subtotal": {
-										"type": ["null", "number"]
+										"type": ["null", "number"],
+										"multipleOf": 1e-08
 									},
 									"details": {
 										"anyOf": [{
@@ -555,7 +556,8 @@
 															"type": ["null", "integer"]
 														},
 														"num_units": {
-															"type": ["null", "number"]
+															"type": ["null", "number"],
+															"multipleOf": 1e-08
 														},
 														"charge_label": {
 															"type": ["null", "string"]
@@ -564,7 +566,8 @@
 															"type": ["null", "string"]
 														},
 														"charge_per_unit": {
-															"type": ["null", "number"]
+															"type": ["null", "number"],
+															"multipleOf": 1e-08
 														},
 														"gl_acct_num": {
 															"type": ["null", "string"]
@@ -897,10 +900,12 @@
 								}
 							},
 							"estimated_qty": {
-								"type": ["null", "number"]
+								"type": ["null", "number"],
+								"multipleOf": 1e-08
 							},
 							"estimated_secondary_qty": {
-								"type": ["null", "number"]
+								"type": ["null", "number"],
+								"multipleOf": 1e-08
 							},
 							"is_order_qty_secondary": {
 								"type": ["null", "boolean"]
@@ -916,13 +921,16 @@
 													"type": ["null", "integer"]
 												},
 												"qty": {
-													"type": ["null", "number"]
+													"type": ["null", "number"],
+													"multipleOf": 1e-08
 												},
 												"properly_picked_primary": {
-													"type": ["null", "number"]
+													"type": ["null", "number"],
+													"multipleOf": 1e-08
 												},
 												"properly_picked_secondary": {
-													"type": ["null", "number"]
+													"type": ["null", "number"],
+													"multipleOf": 1e-08
 												},
 												"loaded_out": {
 													"type": ["null", "boolean"]
@@ -1043,10 +1051,12 @@
 													"type": ["null", "integer"]
 												},
 												"picked_primary_qty": {
-													"type": ["null", "number"]
+													"type": ["null", "number"],
+													"multipleOf": 1e-08
 												},
 												"picked_secondary_qty": {
-													"type": ["null", "number"]
+													"type": ["null", "number"],
+													"multipleOf": 1e-08
 												},
 												"reason": {
 													"type": ["null", "string"]
@@ -1094,10 +1104,12 @@
 								"type": ["null", "string"]
 							},
 							"qty": {
-								"type": ["null", "number"]
+								"type": ["null", "number"],
+								"multipleOf": 1e-08
 							},
 							"secondary_qty": {
-								"type": ["null", "number"]
+								"type": ["null", "number"],
+								"multipleOf": 1e-08
 							},
 							"lot_number": {
 								"type": ["null", "string"]
@@ -1110,22 +1122,27 @@
 								"format": "date-time"
 							},
 							"weight_imperial": {
-								"type": ["null", "number"]
+								"type": ["null", "number"],
+								"multipleOf": 1e-08
 							},
 							"weight_metric": {
-								"type": ["null", "number"]
+								"type": ["null", "number"],
+								"multipleOf": 1e-08
 							},
 							"notes": {
 								"type": ["null", "string"]
 							},
 							"fulfill_inv_sale_price": {
-								"type": ["null", "number"]
+								"type": ["null", "number"],
+								"multipleOf": 1e-08
 							},
 							"fulfill_inv_discount_pct": {
-								"type": ["null", "number"]
+								"type": ["null", "number"],
+								"multipleOf": 1e-08
 							},
 							"fulfill_inv_discount_amt": {
-								"type": ["null", "number"]
+								"type": ["null", "number"],
+								"multipleOf": 1e-08
 							},
 							"fulfill_inv_note": {
 								"type": ["null", "string"]
@@ -1162,7 +1179,8 @@
 													"type": ["null", "integer"]
 												},
 												"qty": {
-													"type": ["null", "number"]
+													"type": ["null", "number"],
+													"multipleOf": 1e-08
 												}
 											}
 										}
@@ -1183,7 +1201,8 @@
 													"type": ["null", "integer"]
 												},
 												"quantity": {
-													"type": ["null", "number"]
+													"type": ["null", "number"],
+													"multipleOf": 1e-08
 												}
 											}
 										}

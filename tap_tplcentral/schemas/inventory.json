@@ -82,49 +82,64 @@
 			}
 		},
 		"inventory_units_per_secondary_unity": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"receive_qty": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"on_hand_qty": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"available_qty": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"on_hold_qty": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"secondary_received_qty": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"secondary_on_hand_qty": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"secondary_available_qty": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"secondary_on_hold_qty": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"weight_imperial": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"weight_imperial_on_hand": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"weight_imperial_available": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"weight_metric": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"weight_metric_on_hand": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"weight_metric_available": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"lot_number": {
 			"type": ["null", "string"]
@@ -137,7 +152,8 @@
 			"format": "date-time"
 		},
 		"cost": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"supplier_identifier": {
 			"type": ["null", "object"],

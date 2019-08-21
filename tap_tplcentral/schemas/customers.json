@@ -261,7 +261,8 @@
 					"additionalProperties": false,
 					"properties": {
 						"fuel_surcharge": {
-							"type": ["null", "number"]
+							"type": ["null", "number"],
+							"multipleOf": 1e-08
 						},
 						"set_invoice_date_to_xaction_confirm_date": {
 							"type": ["null", "boolean"]

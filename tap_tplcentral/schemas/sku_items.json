@@ -69,13 +69,16 @@
 			"type": ["null", "string"]
 		},
 		"cost": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"price": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"temperature": {
-			"type": ["null", "number"]
+			"type": ["null", "number"],
+			"multipleOf": 1e-08
 		},
 		"account_ref": {
 			"type": ["null", "string"]
@@ -137,7 +140,8 @@
 										"type": ["null", "string"]
 									},
 									"qty": {
-										"type": ["null", "number"]
+										"type": ["null", "number"],
+										"multipleOf": 1e-08
 									},
 									"non_sku_material": {
 										"type": ["null", "string"]
@@ -173,13 +177,16 @@
 							}
 						},
 						"minimum_stock": {
-							"type": ["null", "number"]
+							"type": ["null", "number"],
+							"multipleOf": 1e-08
 						},
 						"maximum_stock": {
-							"type": ["null", "number"]
+							"type": ["null", "number"],
+							"multipleOf": 1e-08
 						},
 						"reorder_quantity": {
-							"type": ["null", "number"]
+							"type": ["null", "number"],
+							"multipleOf": 1e-08
 						},
 						"inventory_method": {
 							"type": ["null", "integer"]
@@ -206,7 +213,8 @@
 							}
 						},
 						"inventory_units_per_unit": {
-							"type": ["null", "number"]
+							"type": ["null", "number"],
+							"multipleOf": 1e-08
 						}
 					}
 				},
@@ -219,19 +227,24 @@
 							"additionalProperties": false,
 							"properties": {
 								"net_weight": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"length": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"width": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"height": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"weight": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								}
 							}
 						},
@@ -240,19 +253,24 @@
 							"additionalProperties": false,
 							"properties": {
 								"net_weight": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"length": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"width": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"height": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"weight": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								}
 							}
 						},
@@ -271,7 +289,8 @@
 								}
 							},
 							"inventory_units_per_unit": {
-								"type": ["null", "number"]
+								"type": ["null", "number"],
+								"multipleOf": 1e-08
 							}
 						}
 					}
@@ -317,29 +336,36 @@
 							}
 						},
 						"tie": {
-							"type": ["null", "number"]
+							"type": ["null", "number"],
+							"multipleOf": 1e-08
 						},
 						"high": {
-							"type": ["null", "number"]
+							"type": ["null", "number"],
+							"multipleOf": 1e-08
 						},
 						"qyt": {
-							"type": ["null", "number"]
+							"type": ["null", "number"],
+							"multipleOf": 1e-08
 						},
 						"imperial": {
 							"type": ["null", "object"],
 							"additionalProperties": false,
 							"properties": {
 								"length": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"width": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"height": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"weight": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								}
 							}
 						},
@@ -348,16 +374,20 @@
 							"additionalProperties": false,
 							"properties": {
 								"length": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"width": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"height": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								},
 								"weight": {
-									"type": ["null", "number"]
+									"type": ["null", "number"],
+									"multipleOf": 1e-08
 								}
 							}
 						},
