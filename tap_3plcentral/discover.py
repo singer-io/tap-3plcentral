@@ -1,5 +1,5 @@
 from singer.catalog import Catalog, CatalogEntry, Schema
-from tap_tplcentral.schema import get_schemas, STREAMS
+from tap_3plcentral.schema import get_schemas, STREAMS
 
 
 def discover():

@@ -2,7 +2,7 @@ from datetime import datetime
 import math
 import singer
 from singer import metrics, metadata, Transformer, utils
-from tap_tplcentral.transform import transform_json, convert
+from tap_3plcentral.transform import transform_json, convert
 
 LOGGER = singer.get_logger()
 

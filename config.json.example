@@ -4,7 +4,7 @@
     "client_secret": "xxx",
     "tpl_key": "xxx",
     "user_login_id": "1",
-    "user_agent": "tap-tplcentral <my.email@domain.com>",
+    "user_agent": "tap-3plcentral <my.email@domain.com>",
     "customer_id": "50",
     "facility_id": "1",
     "start_date": "2019-01-01T00:00:00Z"

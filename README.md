@@ -1,4 +1,4 @@
-# tap-tplcentral
+# tap-3plcentral
 
 This is a [Singer](https://singer.io) tap that produces JSON-formatted data
 following the [Singer
@@ -84,7 +84,7 @@ spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
     > source venv/bin/activate
     > python setup.py install
     OR
-    > cd .../tap-tplcentral
+    > cd .../tap-3plcentral
     > pip install .
     ```
 2. Dependent libraries
@@ -107,7 +107,7 @@ spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
         "client_secret": "OAUTH_CLIENT_SECRET",
         "tpl_key": "WH_SPECIFIC_TPL_KEY",
         "user_login_id": "USER_INTEGER_ID",
-        "user_agent": "tap-tplcentral <my.email@domain.com>",
+        "user_agent": "tap-3plcentral <my.email@domain.com>",
         "base_url": "http://secure-wms.com",
         "customer_id": "CUSTOMER_INTEGER_ID",
         "facility_id": "FACILITY_INTEGER_ID"
@@ -117,7 +117,7 @@ spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 4. Run the Tap in Discovery Mode
     This creates a catalog.json for selecting objects/fields to integrate:
     ```bash
-    tap-tplcentral --config config.json --discover > catalog.json
+    tap-3plcentral --config config.json --discover > catalog.json
     ```
    See the Singer docs on discovery mode
    [here](https://github.com/singer-io/getting-started/blob/master/docs/DISCOVERY_MODE.md#discovery-mode).
@@ -126,31 +126,31 @@ spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 
     For Sync mode:
     ```bash
-    > tap-tplcentral --config tap_config.json --catalog catalog.json > state.json
+    > tap-3plcentral --config tap_config.json --catalog catalog.json > state.json
     > tail -1 state.json > state.json.tmp && mv state.json.tmp state.json
     ```
     To load to json files to verify outputs:
     ```bash
-    > tap-tplcentral --config tap_config.json --catalog catalog.json | target-json > state.json
+    > tap-3plcentral --config tap_config.json --catalog catalog.json | target-json > state.json
     > tail -1 state.json > state.json.tmp && mv state.json.tmp state.json
     ```
     To pseudo-load to [Stitch Import API](https://github.com/singer-io/target-stitch) with dry run:
     ```bash
-    > tap-tplcentral --config tap_config.json --catalog catalog.json | target-stitch --config target_config.json --dry-run > state.json
+    > tap-3plcentral --config tap_config.json --catalog catalog.json | target-stitch --config target_config.json --dry-run > state.json
     > tail -1 state.json > state.json.tmp && mv state.json.tmp state.json
     ```
 
 6. Test the Tap
     
-    While developing the tplcentral tap, the following utilities were run in accordance with Singer.io best practices:
+    While developing the 3plcentral tap, the following utilities were run in accordance with Singer.io best practices:
     Pylint to improve [code quality](https://github.com/singer-io/getting-started/blob/master/docs/BEST_PRACTICES.md#code-quality):
     ```bash
-    > pylint tap_tplcentral -d missing-docstring -d logging-format-interpolation -d too-many-locals -d too-many-arguments
+    > pylint tap_3plcentral -d missing-docstring -d logging-format-interpolation -d too-many-locals -d too-many-arguments
     ```
 
     To [check the tap](https://github.com/singer-io/singer-tools#singer-check-tap) and verify working:
     ```bash
-    > tap-tplcentral --config tap_config.json --catalog catalog.json | singer-check-tap >> state.json
+    > tap-3plcentral --config tap_config.json --catalog catalog.json | singer-check-tap >> state.json
     > tail -1 state.json > state.json.tmp && mv state.json.tmp state.json
     ```
 

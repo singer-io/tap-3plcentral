@@ -5,9 +5,9 @@ import json
 import argparse
 import singer
 from singer import metadata, utils
-from tap_tplcentral.client import TPLClient
-from tap_tplcentral.discover import discover
-from tap_tplcentral.sync import sync
+from tap_3plcentral.client import TPLClient
+from tap_3plcentral.discover import discover
+from tap_3plcentral.sync import sync
 
 LOGGER = singer.get_logger()
 
