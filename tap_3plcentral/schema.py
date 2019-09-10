@@ -18,6 +18,14 @@ STREAMS = {
         'replication_method': 'INCREMENTAL',
         'replication_keys': ['received_date']
     },
+    'stock_summaries': {
+        'key_properties': ['facility_id', 'item_id'],
+        'replication_method': 'FULL_TABLE'
+    },
+    'locations': {
+        'key_properties': ['facility_id', 'location_id'],
+        'replication_method': 'FULL_TABLE'
+    },
     'inventory': {
         'key_properties': ['receive_item_id'],
         'replication_method': 'INCREMENTAL',
