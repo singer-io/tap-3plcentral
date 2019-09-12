@@ -10,8 +10,10 @@ spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 - Pulls raw data from the [3PLCentral REST API](http://api.3plcentral.com/rels/)
 - Extracts the following resources:
   - [Customers](http://api.3plcentral.com/rels/customers/customers)
-    - [SKU Items](http://api.3plcentral.com/rels/customers/items)
-    - [Stock Details](http://api.3plcentral.com/rels/inventory/stockdetails)
+  - [SKU Items](http://api.3plcentral.com/rels/customers/items)
+  - [Stock Details](http://api.3plcentral.com/rels/inventory/stockdetails)
+  - [Stock Summaries](http://api.3plcentral.com/rels/inventory/stocksummaries)
+  - [Locations](http://api.3plcentral.com/rels/inventory/locations)
   - [Inventory](http://api.3plcentral.com/rels/inventory/inventory)
   - [Orders (with Order Items and Packages)](http://api.3plcentral.com/rels/orders/orders)
 - Outputs the schema for each resource
@@ -50,6 +52,22 @@ spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 - Transformations: Fields camelCase to snake_case, De-nest and remove nodes (ReadOnly, embedded, links).
 - Parent: customer
 
+[**stock_summaries**](http://api.3plcentral.com/rels/inventory/stocksummaries)
+- Endpoint: https://secure-wms.com/inventory/stocksummaries
+- Primary keys: facility_id, item_id
+- Foreign keys: item_id (sku_items), item_identifier > id (sku_items), facility_id (facilities)
+- Replication strategy: Full table (query all)
+  - Filters: facility_id (from config.json)
+- Transformations: Fields camelCase to snake_case, De-nest and remove nodes (ReadOnly, embedded, links), de-nest item_id.
+
+[**locations**](http://api.3plcentral.com/rels/inventory/locations)
+- Endpoint: https://secure-wms.com/inventory/facilities/[facility_id]/locations
+- Primary keys: facility_id, location_id
+- Foreign keys: item_identifier > id (sku_items), facility_id (facilities), customer_identifier > id (customers)
+- Replication strategy: Full table (query all)
+  - Filters: facility_id (from config.json)
+- Transformations: Fields camelCase to snake_case, De-nest and remove nodes (ReadOnly, embedded, links), de-nest facility_id and location_id.
+
 [**inventory**](http://api.3plcentral.com/rels/inventory/inventory)
 - Endpoint: https://secure-wms.com/inventory
 - Primary keys: receive_item_id
@@ -74,6 +92,16 @@ spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 
 **Endpoints to be added later**: facilities, locations, pallets, suppliers, receivers (initial development client did not have access to these endpoints)
 
+## Authentication
+Request the following information from your 3PL Central Administrator or 3PL Central Support. These parameters are stored in your tap's config.json and used for [authenticating]() REST API calls.
+- client_id: A secure OAuth 2.0 identifier for each application/client.
+- client_secret: A secure OAuth 2.0 secret key for application/client authentication.
+- tpl_key: A warehouse-specic 3PL key.
+- base_url: API URL to which /endpoints are appended. Example: `http://secure-wms.com`
+- user_login_id: Integer ID number for the user.
+- customer_id: Integer ID number for the customer organization.
+- facility_id: Integer ID number for the warehouse facility.
+
 ## Quick Start
 
 1. Install
@@ -87,6 +115,7 @@ spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
     > cd .../tap-3plcentral
     > pip install .
     ```
+
 2. Dependent libraries
     The following dependent libraries were installed.
     ```bash
@@ -98,22 +127,22 @@ spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
     ```
     - [singer-tools](https://github.com/singer-io/singer-tools)
     - [target-stitch](https://github.com/singer-io/target-stitch)
+
 3. Create your tap's config file which should look like the following:
 
     ```json
     {
-        "start_date": "2019-01-01T00:00:00Z",
+        "base_url": "https://secure-wms.com",
         "client_id": "OAUTH_CLIENT_ID",
         "client_secret": "OAUTH_CLIENT_SECRET",
-        "tpl_key": "WH_SPECIFIC_TPL_KEY",
+        "tpl_key": "WH_SPECIFIC_3PL_KEY",
         "user_login_id": "USER_INTEGER_ID",
         "user_agent": "tap-3plcentral <my.email@domain.com>",
-        "base_url": "http://secure-wms.com",
         "customer_id": "CUSTOMER_INTEGER_ID",
-        "facility_id": "FACILITY_INTEGER_ID"
+        "facility_id": "FACILITY_INTEGER_ID",
+        "start_date": "2019-01-01T00:00:00Z"
     }
     ```
-
 4. Run the Tap in Discovery Mode
     This creates a catalog.json for selecting objects/fields to integrate:
     ```bash
@@ -142,7 +171,7 @@ spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 
 6. Test the Tap
     
-    While developing the 3plcentral tap, the following utilities were run in accordance with Singer.io best practices:
+    While developing the 3PLCentral tap, the following utilities were run in accordance with Singer.io best practices:
     Pylint to improve [code quality](https://github.com/singer-io/getting-started/blob/master/docs/BEST_PRACTICES.md#code-quality):
     ```bash
     > pylint tap_3plcentral -d missing-docstring -d logging-format-interpolation -d too-many-locals -d too-many-arguments
