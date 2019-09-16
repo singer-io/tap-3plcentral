@@ -65,9 +65,40 @@ def denest_embedded_readonly_nodes(this_json, path=None):
     return this_json
 
 
+# Stock Summaries: de-nest item_id
+def transform_stock_summaries(this_json, path):
+    new_json = this_json
+    i = 0
+    for record in list(this_json[path]):
+        item_id = record.get('item_identifier', {}).get('id')
+        new_json[path][i]['item_id'] = item_id
+        i = i + 1
+    return new_json
+
+
+# Locations: de-nest location_id and facility_id
+def transform_locations(this_json, path):
+    new_json = this_json
+    i = 0
+    for record in list(this_json[path]):
+        location_id = record.get('location_identifier', {}).get('id')
+        facility_id = record.get('location_identifier', {}).get('name_key', {}).get(
+            'facility_identifier', {}).get('id')
+        new_json[path][i]['location_id'] = location_id
+        new_json[path][i]['facility_id'] = facility_id
+        i = i + 1
+    return new_json
+
+
 # Run all transforms: denests _embedded and ReadOnly, removes _embedded/_links, and
 #  converts camelCase to snake_case for fieldname keys.
-def transform_json(this_json, path):
-    transformed_json = convert_json(remove_embedded_links(\
-                    denest_embedded_readonly_nodes(this_json, path)))
+def transform_json(this_json, stream, path):
+    denested_json = denest_embedded_readonly_nodes(this_json, path)
+    removed_json = remove_embedded_links(denested_json)
+    converted_json = convert_json(removed_json)
+    transformed_json = converted_json
+    if stream == 'stock_summaries':
+        transformed_json = transform_stock_summaries(converted_json, convert(path))
+    elif stream == 'locations':
+        transformed_json = transform_locations(converted_json, convert(path))
     return transformed_json

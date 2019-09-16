@@ -19,12 +19,12 @@ class Server5xxError(Exception):
     pass
 
 class TPLBaseError(Exception):
-    """Generic base exception class for TPL"""
+    """Generic base exception class for 3PLCentral"""
     pass
 
 
 class TPLAPIError(TPLBaseError):
-    """Raised when TPL returns fault code"""
+    """Raised when 3PLCentral returns fault code"""
 
     def __init__(self, msg, error_code=None, tpl_error_msg=''):
         """Initialize the API error.
@@ -42,7 +42,7 @@ class TPLAPIError(TPLBaseError):
 
 
 class TPLClient(object):
-    """Generic API for TPL"""
+    """Generic API for 3PLCentral"""
 
     def __init__(
         self,
@@ -59,13 +59,13 @@ class TPLClient(object):
         
         """
         Create an instance, get access token and update the headers
-        :param base_url: base url to the TPL instance.
+        :param base_url: base url to the 3PLCentral instance.
         :param auth_path: authentication service path.
-        :param client_id: client id of TPL.
-        :param client_secret: client secret key of TPL.
-        :param tpl_key: WH specific TPL key.
+        :param client_id: client id of 3PLCentral app user.
+        :param client_secret: client secret key of 3PLCentral app user.
+        :param tpl_key: WH specific 3PLCentral key.
         :param grant_type: by default 'client_credentials'.
-        :param user_login_id: TPL user id.
+        :param user_login_id: 3PLCentral user id.
         :param user_agent: agent-name <email@address.com>.
         :param session: pass a custom requests Session.
         :param verify_ssl: skip SSL validation.
@@ -134,7 +134,7 @@ class TPLClient(object):
 
     def _parse_error(self, content):
         """Take the content and return as it is.
-        :param content: content returned by the TPL server as string.
+        :param content: content returned by the 3PLCentral server as string.
         :return: content.
         """
         return content

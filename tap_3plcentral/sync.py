@@ -180,9 +180,10 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
 
         # Transform raw data with transform_json from transform.py
         if data_key is None:
-            transformed_data = transform_json(data, data_key)
+            transformed_data = transform_json(data, stream_name, 'ResourceList')[convert(
+                'ResourceList')]
         elif data_key in data:
-            transformed_data = transform_json(data, data_key)[convert(data_key)]
+            transformed_data = transform_json(data, stream_name, data_key)[convert(data_key)]
         # LOGGER.info('transformed_data = {}'.format(transformed_data))
         # If transformed_data is a single-record dict, add it to a list
         if isinstance(transformed_data, dict):
@@ -365,6 +366,25 @@ def sync(client, config, catalog, state, start_date):
             'id_fields': ['receive_item_id']
         },
 
+        'locations': {
+            'path': 'inventory/facilities/{}/locations',
+            'params': {
+                'pgsiz': 200
+            },
+            'data_key': 'ResourceList',
+            'id_fields': ['facility_id', 'location_id']
+        },
+
+        'stock_summaries': {
+            'path': 'inventory/stocksummaries',
+            'params': {
+                'pgsiz': 200,
+                'facilityid': facility_id
+            },
+            'data_key': 'Summaries',
+            'id_fields': ['facility_id', 'item_id']
+        } ,
+
         'customers': {
             'path': 'customers',
             'params': {
@@ -430,7 +450,10 @@ def sync(client, config, catalog, state, start_date):
         if should_stream:
             LOGGER.info('START Syncing: {}'.format(stream_name))
             update_currently_syncing(state, stream_name)
-            path = endpoint_config.get('path')
+            if stream_name == 'locations':
+                path = endpoint_config.get('path').format(facility_id)
+            else:
+                path = endpoint_config.get('path')
             total_records = sync_endpoint(
                 client=client,
                 catalog=catalog,
