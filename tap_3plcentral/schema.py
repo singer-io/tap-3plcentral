@@ -15,8 +15,7 @@ STREAMS = {
     },
     'stock_details': {
         'key_properties': ['receive_item_id'],
-        'replication_method': 'INCREMENTAL',
-        'replication_keys': ['received_date']
+        'replication_method': 'FULL_TABLE'
     },
     'stock_summaries': {
         'key_properties': ['facility_id', 'item_id'],
@@ -28,8 +27,7 @@ STREAMS = {
     },
     'inventory': {
         'key_properties': ['receive_item_id'],
-        'replication_method': 'INCREMENTAL',
-        'replication_keys': ['received_date']
+        'replication_method': 'FULL_TABLE'
     },
     'orders': {
         'key_properties': ['order_id'],

@@ -360,9 +360,6 @@ def sync(client, config, catalog, state, start_date):
                 'sort': 'receivedDate'
             },
             'data_key': 'ResourceList',
-            'bookmark_field': 'received_date',
-            'bookmark_type': 'datetime',
-            'bookmark_query_field': 'receivedDate',
             'id_fields': ['receive_item_id']
         },
 
@@ -416,9 +413,6 @@ def sync(client, config, catalog, state, start_date):
                         'sort': 'receivedDate'
                     },
                     'data_key': 'ResourceList',
-                    'bookmark_field': 'received_date',
-                    'bookmark_type': 'datetime',
-                    'bookmark_query_field': 'receivedDate',
                     'id_fields': ['receive_item_id'],
                     'parent': 'customer'
                 }
