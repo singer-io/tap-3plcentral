@@ -44,11 +44,9 @@ spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 - Endpoint: https://secure-wms.com/inventory/stockdetails
 - Primary keys: receive_item_id
 - Foreign keys: customer_id (customers), item_identifier > id (sku_items), supplier_identifier > id (suppliers), location_identifier > id (locations), facility_identifier > id (facilities), receiver_id (receivers)
-- Replication strategy: Incremental (query filtered)
+- Replication strategy: Full table (query all)
   - Filters: customer_id, facility_id (from config.json)
   - Sort by: receivedDate ASC
-  - Bookmark query field: receivedDate
-  - Bookmark: received_date (date-time)
 - Transformations: Fields camelCase to snake_case, De-nest and remove nodes (ReadOnly, embedded, links).
 - Parent: customer
 
@@ -72,11 +70,9 @@ spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 - Endpoint: https://secure-wms.com/inventory
 - Primary keys: receive_item_id
 - Foreign keys: customer_id (customers), receive_item_id (stock_details), item_identifier > id (sku_items), supplier_identifier > id (suppliers), location_identifier > id (locations), facility_identifier > id (facilities), pallet_identifier > id (pallets), receiver_id (receivers)
-- Replication strategy: Incremental (query filtered)
+- Replication strategy: Full table (query all)
   - Filters: customer_id, facility_id (from config.json)
   - Sort by: receivedDate ASC
-  - Bookmark query field: receivedDate
-  - Bookmark: received_date (date-time)
 - Transformations: Fields camelCase to snake_case, De-nest and remove nodes (ReadOnly, embedded, links).
 
 [**orders w/ order_items and packages**](http://api.3plcentral.com/rels/orders/orders)
