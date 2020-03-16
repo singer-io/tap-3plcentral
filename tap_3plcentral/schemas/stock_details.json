@@ -28,11 +28,11 @@
 		},
 		"received": {
 			"type": ["null", "number"],
-			"multipleOf": 1e-08
+			"multipleOf": 1e-16
 		},
 		"available": {
 			"type": ["null", "number"],
-			"multipleOf": 1e-08
+			"multipleOf": 1e-16
 		},
 		"is_on_hold": {
 			"type": ["null", "boolean"]
@@ -42,7 +42,7 @@
 		},
 		"on_hand": {
 			"type": ["null", "number"],
-			"multipleOf": 1e-08
+			"multipleOf": 1e-16
 		},
 		"lot_number": {
 			"type": ["null", "string"]
@@ -56,7 +56,7 @@
 		},
 		"cost": {
 			"type": ["null", "number"],
-			"multipleOf": 1e-08
+			"multipleOf": 1e-16
 		},
 		"supplier_identifier": {
 			"type": ["null", "object"],

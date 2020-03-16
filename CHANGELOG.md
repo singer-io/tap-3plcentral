@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.4
+  * Increase JSON schema number decimal digits `multipleOf` to `1e-16`
+
 ## 0.0.3
   * Change inventory and stock_details tap endpoints to FULL_TABLE
 
