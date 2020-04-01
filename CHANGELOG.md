@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.0
+  * Preparing for v1.0.0 release
+
 ## 0.0.4
   * Increase JSON schema number decimal digits `multipleOf` to `1e-16`
 
