@@ -375,8 +375,7 @@ def sync(client, config, catalog, state, start_date):
         'stock_summaries': {
             'path': 'inventory/stocksummaries',
             'params': {
-                'pgsiz': 200,
-                'facilityid': facility_id
+                'pgsiz': 200
             },
             'data_key': 'Summaries',
             'id_fields': ['facility_id', 'item_id']

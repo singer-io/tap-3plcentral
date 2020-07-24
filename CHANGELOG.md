@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.1
+  * Remove `stock_summaries` parameter for `facilityId` based on change to API and 3PL vendor recommendation.
+
 ## 1.0.0
   * Preparing for v1.0.0 release
 
