@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.2
+  * Dependabot update [#7](https://github.com/singer-io/tap-3plcentral/pull/7)
+
 ## 1.0.1
   * Remove `stock_summaries` parameter for `facilityId` based on change to API and 3PL vendor recommendation.
 
