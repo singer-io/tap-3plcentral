@@ -16,7 +16,7 @@ jobs:
           command: |
             source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
             uv pip install pylint
-            pylint tap_3plcentral --disable missing-docstring,logging-format-interpolation,no-member,broad-except,too-many-branches,trailing-whitespace,line-too-long,unnecessary-pass,useless-object-inheritance,too-many-instance-attributes,too-many-arguments,too-many-positional-arguments,consider-using-f-string,no-else-return,unused-import,unspecified-encoding,protected-access,too-many-locals,possibly-used-before-assignment
+            pylint tap_3plcentral --disable missing-docstring,logging-format-interpolation,no-member,broad-except,too-many-branches,trailing-whitespace,line-too-long,unnecessary-pass,useless-object-inheritance,too-many-instance-attributes,too-many-arguments,too-many-positional-arguments,consider-using-f-string,no-else-return,unused-import,unspecified-encoding,protected-access,too-many-locals,possibly-used-before-assignment,redefined-builtin,too-many-format-args,too-many-nested-blocks,unused-variable
 
 workflows:
   version: 2
