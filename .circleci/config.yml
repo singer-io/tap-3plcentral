@@ -16,7 +16,7 @@ jobs:
           command: |
             source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
             uv pip install pylint
-            pylint tap_urban_airship --disable missing-docstring,logging-format-interpolation,no-member,broad-except,redefined-variable-type,too-many-branches
+            pylint tap_3plcentral --disable missing-docstring,logging-format-interpolation,no-member,broad-except,redefined-variable-type,too-many-branches
 
 workflows:
   version: 2
