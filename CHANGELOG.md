@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.0
+  * Library version upgrades [#10](https://github.com/singer-io/tap-3plcentral/pull/10)
+
 ## 1.0.2
   * Dependabot update [#7](https://github.com/singer-io/tap-3plcentral/pull/7)
 
