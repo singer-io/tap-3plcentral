@@ -10,7 +10,7 @@ setup(name='tap-3plcentral',
       py_modules=['tap_3plcentral'],
       install_requires=[
           'backoff==2.2.1',
-          'requests==2.32.4',
+          'requests==2.32.5',
           'singer-python==6.1.1'
       ],
       entry_points='''
