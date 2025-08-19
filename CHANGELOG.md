@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.3
+## 1.1.0
   * Libraries Version Updates [#10](https://github.com/singer-io/tap-3plcentral/pull/10)
 
 ## 1.0.2
