@@ -38,7 +38,13 @@ class TPLAPIError(TPLBaseError):
 
     def __str__(self):
         """Include custom msg"""
-        return repr(self.msg + self.tpl_error_msg)
+        if self.tpl_error_msg:
+            if isinstance(self.tpl_error_msg, bytes):
+                error_msg = self.tpl_error_msg.decode('utf-8')
+            else:
+                error_msg = str(self.tpl_error_msg)
+            return repr(self.msg + error_msg)
+        return repr(self.msg)
 
 
 class TPLClient(object):
@@ -134,9 +140,11 @@ class TPLClient(object):
 
     def _parse_error(self, content):
         """Take the content and return as it is.
-        :param content: content returned by the 3PLCentral server as string.
-        :return: content.
+        :param content: content returned by the 3PLCentral server as bytes.
+        :return: content as string.
         """
+        if isinstance(content, bytes):
+            return content.decode('utf-8', errors='replace')
         return content
 
     def _check_status_code(self, status_code, content):
