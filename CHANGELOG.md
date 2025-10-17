@@ -1,4 +1,6 @@
 # Changelog
+## 1.1.0
+  * Added parent_tap_stream_id in catalog
 
 ## 1.0.2
   * Dependabot update [#7](https://github.com/singer-io/tap-3plcentral/pull/7)
