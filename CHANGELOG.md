@@ -2,6 +2,9 @@
 ## 1.1.0
   * Added parent_tap_stream_id in catalog
 
+## 1.0.3
+  * Bump versions of singer-python, requests, and backoff [#12](https://github.com/singer-io/tap-3plcentral/pull/12)
+
 ## 1.0.2
   * Dependabot update [#7](https://github.com/singer-io/tap-3plcentral/pull/7)
 
