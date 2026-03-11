@@ -17,10 +17,40 @@ jobs:
             source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
             uv pip install pylint
             pylint tap_3plcentral --disable missing-docstring,logging-format-interpolation,no-member,broad-except,too-many-branches,trailing-whitespace,line-too-long,unnecessary-pass,useless-object-inheritance,too-many-instance-attributes,too-many-arguments,too-many-positional-arguments,consider-using-f-string,no-else-return,unused-import,unspecified-encoding,protected-access,too-many-locals,possibly-used-before-assignment,redefined-builtin,too-many-format-args,too-many-nested-blocks,unused-variable,too-many-statements
+      - run:
+          name: "Unit Tests"
+          command: |
+            source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
+            coverage run -m pytest tests/unittests
+            coverage html
+      - store_test_results:
+          path: test_output/report.xml
+      - store_artifacts:
+          path: htmlcov
+      - run:
+          name: "Integration Tests"
+          command: |
+            source /usr/local/share/virtualenvs/tap-tester/bin/activate
+            uv pip install --upgrade awscli
+            aws s3 cp s3://com-stitchdata-dev-deployment-assets/environments/tap-tester/tap_tester_sandbox dev_env.sh
+            source dev_env.sh
+            unset USE_STITCH_BACKEND
+            run-test --tap=tap-3plcentral tests
 
 workflows:
   version: 2
   commit:
+    jobs:
+      - build:
+          context: circleci-user
+  build_daily:
+    triggers:
+      - schedule:
+          cron: "0 19 * * *"
+          filters:
+            branches:
+              only:
+                - master
     jobs:
       - build:
           context: circleci-user
