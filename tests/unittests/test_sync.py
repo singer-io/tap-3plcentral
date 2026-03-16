@@ -20,24 +20,24 @@ class TestGetBookmark(unittest.TestCase):
 
     def test_get_bookmark_no_state(self):
         """Returns default when state is None."""
-        result = get_bookmark(None, "orders", "2019-01-01T00:00:00Z")
+        result = get_bookmark(None, "orders", "last_modified_date", "2019-01-01T00:00:00Z")
         self.assertEqual(result, "2019-01-01T00:00:00Z")
 
     def test_get_bookmark_empty_state(self):
         """Returns default when state has no bookmarks key."""
-        result = get_bookmark({}, "orders", "2019-01-01T00:00:00Z")
+        result = get_bookmark({}, "orders", "last_modified_date", "2019-01-01T00:00:00Z")
         self.assertEqual(result, "2019-01-01T00:00:00Z")
 
     def test_get_bookmark_missing_stream(self):
         """Returns default when stream not found in bookmarks."""
-        state = {"bookmarks": {"sku_items": "2025-01-01T00:00:00Z"}}
-        result = get_bookmark(state, "orders", "2019-01-01T00:00:00Z")
+        state = {"bookmarks": {"sku_items": {"last_modified_date": "2025-01-01T00:00:00Z"}}}
+        result = get_bookmark(state, "orders", "last_modified_date", "2019-01-01T00:00:00Z")
         self.assertEqual(result, "2019-01-01T00:00:00Z")
 
     def test_get_bookmark_existing_stream(self):
         """Returns bookmark value when stream exists in bookmarks."""
-        state = {"bookmarks": {"orders": "2025-01-01T00:00:00Z"}}
-        result = get_bookmark(state, "orders", "2019-01-01T00:00:00Z")
+        state = {"bookmarks": {"orders": {"last_modified_date": "2025-01-01T00:00:00Z"}}}
+        result = get_bookmark(state, "orders", "last_modified_date", "2019-01-01T00:00:00Z")
         self.assertEqual(result, "2025-01-01T00:00:00Z")
 
 
@@ -48,16 +48,16 @@ class TestWriteBookmark(unittest.TestCase):
     def test_write_bookmark_new_state(self, mock_write_state):
         """Creates bookmarks key and writes bookmark when state is empty."""
         state = {}
-        write_bookmark(state, "orders", "2025-06-01T00:00:00Z")
-        self.assertEqual(state, {"bookmarks": {"orders": "2025-06-01T00:00:00Z"}})
+        write_bookmark(state, "orders", "last_modified_date", "2025-06-01T00:00:00Z")
+        self.assertEqual(state, {"bookmarks": {"orders": {"last_modified_date": "2025-06-01T00:00:00Z"}}})
         mock_write_state.assert_called_once_with(state)
 
     @patch("tap_3plcentral.sync.singer.write_state")
     def test_write_bookmark_existing_state(self, mock_write_state):
         """Updates existing bookmark value."""
-        state = {"bookmarks": {"orders": "2025-01-01T00:00:00Z"}}
-        write_bookmark(state, "orders", "2025-06-01T00:00:00Z")
-        self.assertEqual(state, {"bookmarks": {"orders": "2025-06-01T00:00:00Z"}})
+        state = {"bookmarks": {"orders": {"last_modified_date": "2025-01-01T00:00:00Z"}}}
+        write_bookmark(state, "orders", "last_modified_date", "2025-06-01T00:00:00Z")
+        self.assertEqual(state, {"bookmarks": {"orders": {"last_modified_date": "2025-06-01T00:00:00Z"}}})
         mock_write_state.assert_called_once_with(state)
 
 
