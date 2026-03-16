@@ -33,6 +33,7 @@ fi
 
 # --- export environment for the tap ---
 export TZ=UTC
+unset USE_STITCH_BACKEND
 export TAP_3PLCENTRAL_BASE_URL="${MOCK_URL}"
 export TAP_3PLCENTRAL_CLIENT_ID="mock_client_id"
 export TAP_3PLCENTRAL_CLIENT_SECRET="mock_client_secret"
