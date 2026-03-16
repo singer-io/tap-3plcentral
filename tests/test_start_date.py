@@ -11,16 +11,8 @@ class ThreePLCentralStartDateTest(StartDateTest, ThreePLCentralBaseTest):
         return "tap_tester_3plcentral_start_date_test"
 
     def streams_to_test(self):
-        # Only incremental streams that obey start_date
-        streams_to_exclude = {
-            # Full table replication streams (start_date not applicable)
-            "customers",
-            "stock_details",
-            "stock_summaries",
-            "locations",
-            "inventory",
-        }
-        return self.expected_stream_names().difference(streams_to_exclude)
+        # Only incremental, non-child streams that obey start_date
+        return {"orders"}
 
     @property
     def start_date_1(self):

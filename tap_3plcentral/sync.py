@@ -26,20 +26,22 @@ def write_record(stream_name, record, time_extracted):
         raise err
 
 
-def get_bookmark(state, stream, default):
+def get_bookmark(state, stream, bookmark_field, default):
     if (state is None) or ('bookmarks' not in state):
         return default
-    return (
-        state
-        .get('bookmarks', {})
-        .get(stream, default)
-    )
+    stream_bookmark = state.get('bookmarks', {}).get(stream, {})
+    if isinstance(stream_bookmark, dict):
+        return stream_bookmark.get(bookmark_field, default)
+    # Handle legacy flat bookmark format
+    if stream_bookmark:
+        return stream_bookmark
+    return default
 
 
-def write_bookmark(state, stream, value):
+def write_bookmark(state, stream, bookmark_field, value):
     if 'bookmarks' not in state:
         state['bookmarks'] = {}
-    state['bookmarks'][stream] = value
+    state['bookmarks'][stream] = {bookmark_field: value}
     LOGGER.info('Write state for stream: {}, value: {}'.format(stream, value))
     singer.write_state(state)
 
@@ -120,10 +122,10 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
     last_integer = None
     max_bookmark_value = None
     if bookmark_type == 'integer':
-        last_integer = get_bookmark(state, stream_name, 0)
+        last_integer = get_bookmark(state, stream_name, bookmark_field, 0)
         max_bookmark_value = last_integer
     else:
-        last_datetime = get_bookmark(state, stream_name, start_date)
+        last_datetime = get_bookmark(state, stream_name, bookmark_field, start_date)
         max_bookmark_value = last_datetime
 
     write_schema(catalog, stream_name)
@@ -270,6 +272,7 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
         if bookmark_field:
             write_bookmark(state,
                            stream_name,
+                           bookmark_field,
                            max_bookmark_value)
 
         LOGGER.info('{} - Synced - page: {}, total pages: {}'.format(
