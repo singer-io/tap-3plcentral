@@ -21,6 +21,7 @@ jobs:
           name: "Unit Tests"
           command: |
             source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
+            uv pip install coverage pytest
             coverage run -m pytest tests/unittests
             coverage html
       - store_test_results:
