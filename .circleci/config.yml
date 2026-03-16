@@ -31,6 +31,7 @@ jobs:
       - run:
           name: "Integration Tests"
           command: |
+            apt-get update -qq && apt-get install -y -qq git openssh-client > /dev/null 2>&1
             source /usr/local/share/virtualenvs/tap-tester/bin/activate
             uv pip install "tap-tester @ git+ssh://git@github.com/stitchdata/tap-tester.git@SAC-27209-in-memory-backend-without-target"
             bash tests/run_tests.sh
