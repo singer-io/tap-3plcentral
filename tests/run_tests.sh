@@ -22,7 +22,14 @@ MOCK_PORT="${MOCK_SERVER_PORT:-8765}"
 MOCK_URL="http://localhost:${MOCK_PORT}"
 TAP_TESTER_VENV="/usr/local/share/virtualenvs/tap-tester"
 TAP_VENV="/usr/local/share/virtualenvs/tap-3plcentral"
-TAP_TESTER_DIR="/opt/code/tap-tester"
+
+# Locate tap-tester directory: prefer /opt/code/tap-tester, fall back to venv site-packages
+if [[ -d "/opt/code/tap-tester" ]]; then
+    TAP_TESTER_DIR="/opt/code/tap-tester"
+elif [[ -d "${TAP_TESTER_VENV}/lib" ]]; then
+    TAP_TESTER_DIR="$(find "${TAP_TESTER_VENV}/lib" -type d -name "tap_tester" -path "*/site-packages/tap_tester" 2>/dev/null | head -1)"
+    TAP_TESTER_DIR="${TAP_TESTER_DIR%/tap_tester}"  # go up to site-packages parent
+fi
 
 # --- export environment for the tap ---
 export TZ=UTC
@@ -82,7 +89,12 @@ else
 fi
 
 # --- run tests ---
-cd "${TAP_TESTER_DIR}"
+# Use run-test from tap-tester dir if available, otherwise from PATH (venv)
+if [[ -n "${TAP_TESTER_DIR:-}" && -x "${TAP_TESTER_DIR}/bin/run-test" ]]; then
+    RUN_TEST="${TAP_TESTER_DIR}/bin/run-test"
+else
+    RUN_TEST="$(command -v run-test 2>/dev/null || echo "${TAP_TESTER_VENV}/bin/run-test")"
+fi
 FAILURES=0
 
 for test_file in "${TEST_FILES[@]}"; do
@@ -90,7 +102,7 @@ for test_file in "${TEST_FILES[@]}"; do
     echo "════════════════════════════════════════════════════════════"
     echo "  Running: ${test_file}"
     echo "════════════════════════════════════════════════════════════"
-    if ./bin/run-test --tap=tap-3plcentral "${TAP_DIR}/tests/${test_file}"; then
+    if "${RUN_TEST}" --tap=tap-3plcentral "${TAP_DIR}/tests/${test_file}"; then
         echo "✓ ${test_file} PASSED"
     else
         echo "✗ ${test_file} FAILED"
