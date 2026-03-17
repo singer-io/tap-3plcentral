@@ -51,8 +51,8 @@ class DiscoveryIntegrationTest(ThreePLCentralMockBaseTest, unittest.TestCase):
         stream_map = {stream.tap_stream_id: stream for stream in catalog.streams}
 
         parent_expectations = {
-            "sku_items": "customer",
-            "stock_details": "customer",
+            "sku_items": "customers",
+            "stock_details": "customers",
         }
 
         for stream_name, expected_parent in parent_expectations.items():
