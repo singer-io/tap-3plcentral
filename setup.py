@@ -13,6 +13,12 @@ setup(name='tap-3plcentral',
           'requests==2.32.4',
           'singer-python==6.1.1'
       ],
+      extras_require={
+          'dev': [
+              'parameterized',
+              'pytest',
+          ]
+      },
       entry_points='''
           [console_scripts]
           tap-3plcentral=tap_3plcentral:main
