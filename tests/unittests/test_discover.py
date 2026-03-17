@@ -93,16 +93,10 @@ class TestGetSchemas(unittest.TestCase):
             root_metadata = root_entries[0]["metadata"]
 
             if parent:
-                # Singer expects parent-tap-stream-id to be a real parent stream id
-                # Map any known misconfigured parent values to their actual stream ids.
-                expected_parent_id = parent
-                if parent == "customer":
-                    expected_parent_id = "customers"
-
                 self.assertEqual(
                     root_metadata.get("parent-tap-stream-id"),
-                    expected_parent_id,
-                    f"Expected parent '{expected_parent_id}' for stream '{stream_name}'",
+                    parent,
+                    f"Expected parent '{parent}' for stream '{stream_name}'",
                 )
             else:
                 self.assertNotIn("parent-tap-stream-id", root_metadata)

@@ -12,12 +12,12 @@ STREAMS = {
         'key_properties': ['item_id'],
         'replication_method': 'INCREMENTAL',
         'replication_keys': ['last_modified_date'],
-        'parent': 'customer'
+        'parent': 'customers'
     },
     'stock_details': {
         'key_properties': ['receive_item_id'],
         'replication_method': 'FULL_TABLE',
-        'parent': 'customer'
+        'parent': 'customers'
     },
     'stock_summaries': {
         'key_properties': ['facility_id', 'item_id'],
