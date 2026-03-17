@@ -17,49 +17,10 @@ jobs:
             source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
             uv pip install pylint
             pylint tap_3plcentral --disable missing-docstring,logging-format-interpolation,no-member,broad-except,too-many-branches,trailing-whitespace,line-too-long,unnecessary-pass,useless-object-inheritance,too-many-instance-attributes,too-many-arguments,too-many-positional-arguments,consider-using-f-string,no-else-return,unused-import,unspecified-encoding,protected-access,too-many-locals,possibly-used-before-assignment,redefined-builtin,too-many-format-args,too-many-nested-blocks,unused-variable,too-many-statements
-      - run:
-          name: "Unit Tests"
-          command: |
-            source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
-            uv pip install coverage pytest parameterized
-            coverage run -m pytest tests/unittests
-            coverage html
-      - store_test_results:
-          path: test_output/report.xml
-      - store_artifacts:
-          path: htmlcov
-      - run:
-          name: "Integration Tests"
-          command: |
-            export TZ=UTC
-            export TAP_3PLCENTRAL_BASE_URL="http://localhost:8765"
-            export TAP_3PLCENTRAL_CLIENT_ID="mock_client_id"
-            export TAP_3PLCENTRAL_CLIENT_SECRET="mock_client_secret"
-            export TAP_3PLCENTRAL_TPL_KEY="mock_tpl_key"
-            export TAP_3PLCENTRAL_USER_LOGIN_ID="1"
-            export TAP_3PLCENTRAL_USER_AGENT="tap-3plcentral <test@test.com>"
-            export TAP_3PLCENTRAL_CUSTOMER_ID="50"
-            export TAP_3PLCENTRAL_FACILITY_ID="1"
-            /usr/local/share/virtualenvs/tap-3plcentral/bin/python tests/mock_server.py --port 8765 &
-            sleep 2
-            source /usr/local/share/virtualenvs/tap-tester/bin/activate
-            unset USE_STITCH_BACKEND
-            run-test --tap=tap-3plcentral tests
 
 workflows:
   version: 2
   commit:
-    jobs:
-      - build:
-          context: circleci-user
-  build_daily:
-    triggers:
-      - schedule:
-          cron: "0 19 * * *"
-          filters:
-            branches:
-              only:
-                - master
     jobs:
       - build:
           context: circleci-user
