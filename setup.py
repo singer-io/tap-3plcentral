@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='tap-3plcentral',
-      version='1.1.0',
+      version='1.1.1',
       description='Singer.io tap for extracting data from the 3PLCentral Resource (REL) API.',
       author='jeff.huth@bytecode.io',
       classifiers=['Programming Language :: Python :: 3 :: Only'],
