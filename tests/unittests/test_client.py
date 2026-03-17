@@ -75,9 +75,9 @@ class TestTPLClient(unittest.TestCase):
             session=mock_session,
         )
         self.assertEqual(client.client, mock_session)
-        # _get_access_token is still called by __init__ before session check,
-        # but the session assignment uses the custom one
+        # Since a custom session is provided, __init__ should not call _get_access_token
         mock_get_token.assert_not_called()
+
 
     @patch("tap_3plcentral.client.TPLClient._execute")
     def test_get_request(self, mock_execute):
