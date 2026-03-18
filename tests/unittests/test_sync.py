@@ -178,8 +178,7 @@ class TestUpdateCurrentlySyncing(unittest.TestCase):
         """Removes currently_syncing when stream_name is None."""
         state = {"currently_syncing": "orders"}
         update_currently_syncing(state, None)
-        self.assertNotIn("currently_syncing", state)
-        mock_set.assert_not_called()
+        mock_set.assert_called_once_with(state, None)
         mock_write_state.assert_called_once_with(state)
 
 

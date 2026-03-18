@@ -301,10 +301,7 @@ def get_selected_streams(catalog):
 #  the starting point to continue from.
 # Reference: https://github.com/singer-io/singer-python/blob/master/singer/bookmarks.py#L41-L46
 def update_currently_syncing(state, stream_name):
-    if (stream_name is None) and ('currently_syncing' in state):
-        del state['currently_syncing']
-    else:
-        singer.set_currently_syncing(state, stream_name)
+    singer.set_currently_syncing(state, stream_name)
     singer.write_state(state)
 
 

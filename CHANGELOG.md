@@ -1,5 +1,5 @@
 # Changelog
-## 1.1.1
+## 1.2.0
   * Updated python version. [#13](https://github.com/singer-io/tap-3plcentral/pull/13)
   * Added integration tests.
 
