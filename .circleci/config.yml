@@ -30,7 +30,7 @@ jobs:
             source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
             python -m pytest tests/unittests/ -v
       - run:
-          name: 'Mock Integration Tests'
+          name: 'Integration Tests'
           command: |
             source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
             python -m pytest tests/test_*.py -v
