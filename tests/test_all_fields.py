@@ -173,19 +173,20 @@ class AllFieldsIntegrationTest(ThreePLCentralMockBaseTest, unittest.TestCase):
             call_args[0][0] for call_args in mock_write_record.call_args_list
         }
 
-        # Verify records were written for key streams
-        self.assertIn("customers", written_streams)
-        self.assertIn("orders", written_streams)
-        self.assertIn("inventory", written_streams)
-        self.assertIn("stock_summaries", written_streams)
-        self.assertIn("locations", written_streams)
+        # Verify records were written for all streams (including children)
+        for stream in ["customers", "orders", "inventory", "stock_summaries",
+                       "locations", "sku_items", "stock_details"]:
+            self.assertIn(stream, written_streams,
+                          f"No records written for stream '{stream}'")
 
-        # Verify write_schema was called for synced streams
+        # Verify write_schema was called for all synced streams
         schema_streams = {
             call_args[0][0] for call_args in mock_write_schema.call_args_list
         }
-        for stream in ["customers", "orders", "inventory", "stock_summaries", "locations"]:
-            self.assertIn(stream, schema_streams)
+        for stream in ["customers", "orders", "inventory", "stock_summaries",
+                       "locations", "sku_items", "stock_details"]:
+            self.assertIn(stream, schema_streams,
+                          f"write_schema not called for stream '{stream}'")
 
     @patch("tap_3plcentral.sync.singer.write_state")
     @patch("tap_3plcentral.sync.write_record")

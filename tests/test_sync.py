@@ -151,7 +151,7 @@ class SyncIntegrationTest(ThreePLCentralMockBaseTest, unittest.TestCase):
         mock_set_syncing.assert_called_with(state, "orders")
 
         update_currently_syncing(state, None)
-        self.assertNotIn("currently_syncing", state)
+        mock_set_syncing.assert_called_with(state, None)
 
     @patch("tap_3plcentral.sync.singer.write_state")
     @patch("tap_3plcentral.sync.write_record")
