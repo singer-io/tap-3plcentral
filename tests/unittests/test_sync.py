@@ -40,6 +40,81 @@ class TestGetBookmark(unittest.TestCase):
         result = get_bookmark(state, "orders", "last_modified_date", "2019-01-01T00:00:00Z")
         self.assertEqual(result, "2025-01-01T00:00:00Z")
 
+    def test_get_bookmark_missing_field_in_stream(self):
+        """Returns default when stream exists but bookmark_field is missing."""
+        state = {"bookmarks": {"orders": {"some_other_field": "2025-01-01T00:00:00Z"}}}
+        result = get_bookmark(state, "orders", "last_modified_date", "2019-01-01T00:00:00Z")
+        self.assertEqual(result, "2019-01-01T00:00:00Z")
+
+    def test_get_bookmark_empty_stream_dict(self):
+        """Returns default when stream has empty dict bookmark."""
+        state = {"bookmarks": {"orders": {}}}
+        result = get_bookmark(state, "orders", "last_modified_date", "2019-01-01T00:00:00Z")
+        self.assertEqual(result, "2019-01-01T00:00:00Z")
+
+    def test_get_bookmark_legacy_flat_string(self):
+        """Returns the flat string value for legacy bookmark format."""
+        state = {"bookmarks": {"orders": "2025-03-15T00:00:00Z"}}
+        result = get_bookmark(state, "orders", "last_modified_date", "2019-01-01T00:00:00Z")
+        self.assertEqual(result, "2025-03-15T00:00:00Z")
+
+    def test_get_bookmark_legacy_flat_integer(self):
+        """Returns the flat integer value for legacy bookmark format."""
+        state = {"bookmarks": {"orders": 12345}}
+        result = get_bookmark(state, "orders", "order_id", 0)
+        self.assertEqual(result, 12345)
+
+    def test_get_bookmark_legacy_falsy_zero(self):
+        """Returns default when legacy bookmark is falsy (0)."""
+        state = {"bookmarks": {"orders": 0}}
+        result = get_bookmark(state, "orders", "order_id", 99)
+        self.assertEqual(result, 99)
+
+    def test_get_bookmark_legacy_falsy_empty_string(self):
+        """Returns default when legacy bookmark is falsy (empty string)."""
+        state = {"bookmarks": {"orders": ""}}
+        result = get_bookmark(state, "orders", "last_modified_date", "2019-01-01T00:00:00Z")
+        self.assertEqual(result, "2019-01-01T00:00:00Z")
+
+    def test_get_bookmark_multiple_streams(self):
+        """Returns correct bookmark when multiple streams present."""
+        state = {
+            "bookmarks": {
+                "orders": {"last_modified_date": "2025-10-01T00:00:00Z"},
+                "sku_items": {"last_modified_date": "2025-08-01T00:00:00Z"},
+            }
+        }
+        self.assertEqual(
+            get_bookmark(state, "orders", "last_modified_date", "default"),
+            "2025-10-01T00:00:00Z",
+        )
+        self.assertEqual(
+            get_bookmark(state, "sku_items", "last_modified_date", "default"),
+            "2025-08-01T00:00:00Z",
+        )
+
+    def test_get_bookmark_integer_type(self):
+        """Returns integer bookmark value correctly."""
+        state = {"bookmarks": {"orders": {"order_id": 500}}}
+        result = get_bookmark(state, "orders", "order_id", 0)
+        self.assertEqual(result, 500)
+
+    def test_get_bookmark_does_not_mutate_state(self):
+        """get_bookmark should not modify the state dict."""
+        state = {"bookmarks": {"orders": {"last_modified_date": "2025-01-01T00:00:00Z"}}}
+        original = {"bookmarks": {"orders": {"last_modified_date": "2025-01-01T00:00:00Z"}}}
+        get_bookmark(state, "orders", "last_modified_date", "default")
+        self.assertEqual(state, original)
+
+    def test_get_bookmark_state_with_extra_keys(self):
+        """Returns bookmark even when state has other top-level keys."""
+        state = {
+            "currently_syncing": "orders",
+            "bookmarks": {"orders": {"last_modified_date": "2025-05-01T00:00:00Z"}},
+        }
+        result = get_bookmark(state, "orders", "last_modified_date", "default")
+        self.assertEqual(result, "2025-05-01T00:00:00Z")
+
 
 class TestWriteBookmark(unittest.TestCase):
     """Tests for write_bookmark helper."""
@@ -59,6 +134,137 @@ class TestWriteBookmark(unittest.TestCase):
         write_bookmark(state, "orders", "last_modified_date", "2025-06-01T00:00:00Z")
         self.assertEqual(state, {"bookmarks": {"orders": {"last_modified_date": "2025-06-01T00:00:00Z"}}})
         mock_write_state.assert_called_once_with(state)
+
+    @patch("tap_3plcentral.sync.singer.write_state")
+    def test_write_bookmark_preserves_other_streams(self, mock_write_state):
+        """Writing a bookmark for one stream does not affect other streams."""
+        state = {
+            "bookmarks": {
+                "orders": {"last_modified_date": "2025-01-01T00:00:00Z"},
+                "sku_items": {"last_modified_date": "2025-03-01T00:00:00Z"},
+            }
+        }
+        write_bookmark(state, "orders", "last_modified_date", "2025-06-01T00:00:00Z")
+        self.assertEqual(
+            state["bookmarks"]["sku_items"],
+            {"last_modified_date": "2025-03-01T00:00:00Z"},
+        )
+        self.assertEqual(
+            state["bookmarks"]["orders"],
+            {"last_modified_date": "2025-06-01T00:00:00Z"},
+        )
+
+    @patch("tap_3plcentral.sync.singer.write_state")
+    def test_write_bookmark_overwrites_legacy_flat_value(self, mock_write_state):
+        """Writing a bookmark replaces a legacy flat value with the dict format."""
+        state = {"bookmarks": {"orders": "2025-01-01T00:00:00Z"}}
+        write_bookmark(state, "orders", "last_modified_date", "2025-06-01T00:00:00Z")
+        self.assertEqual(
+            state["bookmarks"]["orders"],
+            {"last_modified_date": "2025-06-01T00:00:00Z"},
+        )
+
+    @patch("tap_3plcentral.sync.singer.write_state")
+    def test_write_bookmark_integer_value(self, mock_write_state):
+        """Writes integer bookmark value correctly."""
+        state = {}
+        write_bookmark(state, "orders", "order_id", 500)
+        self.assertEqual(state, {"bookmarks": {"orders": {"order_id": 500}}})
+        mock_write_state.assert_called_once_with(state)
+
+    @patch("tap_3plcentral.sync.singer.write_state")
+    def test_write_bookmark_preserves_extra_state_keys(self, mock_write_state):
+        """Writing a bookmark preserves other top-level state keys."""
+        state = {"currently_syncing": "orders", "bookmarks": {}}
+        write_bookmark(state, "orders", "last_modified_date", "2025-06-01T00:00:00Z")
+        self.assertIn("currently_syncing", state)
+        self.assertEqual(state["currently_syncing"], "orders")
+
+    @patch("tap_3plcentral.sync.singer.write_state")
+    def test_write_bookmark_calls_write_state_with_full_state(self, mock_write_state):
+        """write_state receives the complete state dict including bookmarks."""
+        state = {"currently_syncing": "orders"}
+        write_bookmark(state, "orders", "last_modified_date", "2025-06-01T00:00:00Z")
+        written_state = mock_write_state.call_args[0][0]
+        self.assertIn("currently_syncing", written_state)
+        self.assertIn("bookmarks", written_state)
+        self.assertEqual(
+            written_state["bookmarks"]["orders"],
+            {"last_modified_date": "2025-06-01T00:00:00Z"},
+        )
+
+    @patch("tap_3plcentral.sync.singer.write_state")
+    def test_write_bookmark_multiple_sequential_writes(self, mock_write_state):
+        """Sequential writes advance the bookmark correctly."""
+        state = {}
+        write_bookmark(state, "orders", "last_modified_date", "2025-01-01T00:00:00Z")
+        write_bookmark(state, "orders", "last_modified_date", "2025-06-01T00:00:00Z")
+        write_bookmark(state, "orders", "last_modified_date", "2025-12-01T00:00:00Z")
+        self.assertEqual(
+            state["bookmarks"]["orders"],
+            {"last_modified_date": "2025-12-01T00:00:00Z"},
+        )
+        self.assertEqual(mock_write_state.call_count, 3)
+
+
+class TestBookmarkRoundTrip(unittest.TestCase):
+    """Tests that write_bookmark and get_bookmark work together correctly."""
+
+    @patch("tap_3plcentral.sync.singer.write_state")
+    def test_write_then_read_returns_written_value(self, mock_write_state):
+        """A value written with write_bookmark can be read back with get_bookmark."""
+        state = {}
+        write_bookmark(state, "orders", "last_modified_date", "2025-10-15T00:00:00Z")
+        result = get_bookmark(state, "orders", "last_modified_date", "default")
+        self.assertEqual(result, "2025-10-15T00:00:00Z")
+
+    @patch("tap_3plcentral.sync.singer.write_state")
+    def test_round_trip_multiple_streams(self, mock_write_state):
+        """Write bookmarks for multiple streams and read each back correctly."""
+        state = {}
+        write_bookmark(state, "orders", "last_modified_date", "2025-10-01T00:00:00Z")
+        write_bookmark(state, "sku_items", "last_modified_date", "2025-08-01T00:00:00Z")
+
+        self.assertEqual(
+            get_bookmark(state, "orders", "last_modified_date", "default"),
+            "2025-10-01T00:00:00Z",
+        )
+        self.assertEqual(
+            get_bookmark(state, "sku_items", "last_modified_date", "default"),
+            "2025-08-01T00:00:00Z",
+        )
+
+    @patch("tap_3plcentral.sync.singer.write_state")
+    def test_round_trip_overwrite_advances_bookmark(self, mock_write_state):
+        """Overwriting a bookmark and reading returns the latest value."""
+        state = {}
+        write_bookmark(state, "orders", "last_modified_date", "2025-01-01T00:00:00Z")
+        self.assertEqual(
+            get_bookmark(state, "orders", "last_modified_date", "default"),
+            "2025-01-01T00:00:00Z",
+        )
+
+        write_bookmark(state, "orders", "last_modified_date", "2025-12-01T00:00:00Z")
+        self.assertEqual(
+            get_bookmark(state, "orders", "last_modified_date", "default"),
+            "2025-12-01T00:00:00Z",
+        )
+
+    @patch("tap_3plcentral.sync.singer.write_state")
+    def test_round_trip_integer_bookmark(self, mock_write_state):
+        """Write and read back an integer bookmark."""
+        state = {}
+        write_bookmark(state, "orders", "order_id", 42)
+        result = get_bookmark(state, "orders", "order_id", 0)
+        self.assertEqual(result, 42)
+
+    @patch("tap_3plcentral.sync.singer.write_state")
+    def test_unwritten_stream_returns_default_after_other_writes(self, mock_write_state):
+        """A stream not yet written returns default even after other streams are written."""
+        state = {}
+        write_bookmark(state, "orders", "last_modified_date", "2025-10-01T00:00:00Z")
+        result = get_bookmark(state, "customers", "last_modified_date", "2019-01-01T00:00:00Z")
+        self.assertEqual(result, "2019-01-01T00:00:00Z")
 
 
 class TestWriteSchema(unittest.TestCase):
