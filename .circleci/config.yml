@@ -8,19 +8,48 @@ jobs:
       - run:
           name: 'Setup virtual env'
           command: |
-            uv venv --python 3.9 /usr/local/share/virtualenvs/tap-3plcentral
+            uv venv --python 3.12 /usr/local/share/virtualenvs/tap-3plcentral
             source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
-            uv pip install .
+            uv pip install -U pip setuptools
+            uv pip install .[dev]
+      - add_ssh_keys
+      - run:
+          name: 'JSON Validator'
+          command: |
+            source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
+            stitch-validate-json /usr/local/share/virtualenvs/tap-3plcentral/lib/python3.12/site-packages/tap_3plcentral/schemas/*.json
       - run:
           name: 'pylint'
           command: |
             source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
             uv pip install pylint
             pylint tap_3plcentral --disable missing-docstring,logging-format-interpolation,no-member,broad-except,too-many-branches,trailing-whitespace,line-too-long,unnecessary-pass,useless-object-inheritance,too-many-instance-attributes,too-many-arguments,too-many-positional-arguments,consider-using-f-string,no-else-return,unused-import,unspecified-encoding,protected-access,too-many-locals,possibly-used-before-assignment,redefined-builtin,too-many-format-args,too-many-nested-blocks,unused-variable,too-many-statements
+      - run:
+          name: 'Unit Tests'
+          command: |
+            source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
+            python -m pytest tests/unittests/ -v
+      - run:
+          name: 'Integration Tests'
+          command: |
+            source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
+            python -m pytest tests/test_*.py -v
 
 workflows:
   version: 2
   commit:
+    jobs:
+      - build:
+          context: circleci-user
+  build_daily:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - main
+                - master
     jobs:
       - build:
           context: circleci-user

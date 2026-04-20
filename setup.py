@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='tap-3plcentral',
-      version='1.1.0',
+      version='2.0.0',
       description='Singer.io tap for extracting data from the 3PLCentral Resource (REL) API.',
       author='jeff.huth@bytecode.io',
       classifiers=['Programming Language :: Python :: 3 :: Only'],
@@ -11,8 +11,14 @@ setup(name='tap-3plcentral',
       install_requires=[
           'backoff==2.2.1',
           'requests==2.32.4',
-          'singer-python==6.1.1'
+          'singer-python==6.8.0'
       ],
+      extras_require={
+          'dev': [
+              'parameterized',
+              'pytest',
+          ]
+      },
       entry_points='''
           [console_scripts]
           tap-3plcentral=tap_3plcentral:main

@@ -12,12 +12,12 @@ STREAMS = {
         'key_properties': ['item_id'],
         'replication_method': 'INCREMENTAL',
         'replication_keys': ['last_modified_date'],
-        'parent': 'customer'
+        'parent': 'customers'
     },
     'stock_details': {
         'key_properties': ['receive_item_id'],
         'replication_method': 'FULL_TABLE',
-        'parent': 'customer'
+        'parent': 'customers'
     },
     'stock_summaries': {
         'key_properties': ['facility_id', 'item_id'],
@@ -62,6 +62,9 @@ def get_schemas():
             replication_method=stream_metadata.get('replication_method', None)
         )
         mdata = metadata.to_map(mdata)
+        # Mark replication keys as automatic inclusion
+        for rep_key in stream_metadata.get('replication_keys', []):
+            mdata = metadata.write(mdata, ('properties', rep_key), 'inclusion', 'automatic')
         parent_tap_stream_id = stream_metadata.get('parent', None)
         if parent_tap_stream_id:
             mdata = metadata.write(mdata, (), 'parent-tap-stream-id', parent_tap_stream_id)
