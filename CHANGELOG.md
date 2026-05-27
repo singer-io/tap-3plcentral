@@ -1,7 +1,7 @@
 # Changelog
 ## 2.0.0
   * Update python version. [#13](https://github.com/singer-io/tap-3plcentral/pull/13)
-  * Updated bookmark logic
+  * Update bookmark logic
   * Add integration tests.
   * Add parent_tap_stream_id in catalog
   * Add library upgrade [15](https://github.com/singer-io/tap-3plcentral/pull/15)
