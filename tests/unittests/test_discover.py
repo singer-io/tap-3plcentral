@@ -21,7 +21,7 @@ class TestCheckStreamAccess(unittest.TestCase):
 
     def test_returns_true_when_accessible(self):
         client = MagicMock()
-        result = check_stream_access(client, 'customers', STREAMS['customers'])
+        result = check_stream_access(client, 'customers')
         self.assertTrue(result)
         client.get.assert_called_once_with(
             resource_path='customers',
@@ -32,19 +32,19 @@ class TestCheckStreamAccess(unittest.TestCase):
     def test_returns_false_on_401(self):
         client = MagicMock()
         client.get.side_effect = TPLAPIError('Unauthorized', error_code=401)
-        result = check_stream_access(client, 'customers', STREAMS['customers'])
+        result = check_stream_access(client, 'customers')
         self.assertFalse(result)
 
     def test_returns_false_on_403(self):
         client = MagicMock()
         client.get.side_effect = TPLAPIError('Forbidden', error_code=403)
-        result = check_stream_access(client, 'orders', STREAMS['orders'])
+        result = check_stream_access(client, 'orders')
         self.assertFalse(result)
 
     def test_returns_false_on_404(self):
         client = MagicMock()
         client.get.side_effect = TPLAPIError('Not Found', error_code=404)
-        result = check_stream_access(client, 'locations', STREAMS['locations'])
+        result = check_stream_access(client, 'locations')
         self.assertFalse(result)
 
     def test_reraises_non_auth_tpl_error(self):
@@ -52,13 +52,13 @@ class TestCheckStreamAccess(unittest.TestCase):
         client = MagicMock()
         client.get.side_effect = TPLAPIError('Internal Server Error', error_code=500)
         with self.assertRaises(TPLAPIError):
-            check_stream_access(client, 'customers', STREAMS['customers'])
+            check_stream_access(client, 'customers')
 
     def test_reraises_other_exceptions(self):
         client = MagicMock()
         client.get.side_effect = ConnectionError('network error')
         with self.assertRaises(ConnectionError):
-            check_stream_access(client, 'customers', STREAMS['customers'])
+            check_stream_access(client, 'customers')
 
 
 # ---------------------------------------------------------------------------
@@ -106,7 +106,7 @@ class TestApplyAccessChecks(unittest.TestCase):
 
     @patch('tap_3plcentral.discover.check_stream_access')
     def test_removes_inaccessible_top_level_stream(self, mock_check):
-        mock_check.side_effect = lambda client, name, cfg: name != 'orders'
+        mock_check.side_effect = lambda client, name: name != 'orders'
         schemas = {'customers': {}, 'orders': {}, 'sku_items': {}}
         field_metadata = {'customers': [], 'orders': [], 'sku_items': []}
         _apply_access_checks(MagicMock(), schemas, field_metadata)
@@ -116,7 +116,7 @@ class TestApplyAccessChecks(unittest.TestCase):
 
     @patch('tap_3plcentral.discover.check_stream_access')
     def test_prunes_child_when_parent_removed(self, mock_check):
-        mock_check.side_effect = lambda client, name, cfg: name != 'customers'
+        mock_check.side_effect = lambda client, name: name != 'customers'
         schemas = {'customers': {}, 'sku_items': {}, 'orders': {}}
         field_metadata = {'customers': [], 'sku_items': [], 'orders': []}
         _apply_access_checks(MagicMock(), schemas, field_metadata)
@@ -156,7 +156,7 @@ class TestApplyAccessChecks(unittest.TestCase):
 
     @patch('tap_3plcentral.discover.check_stream_access')
     def test_logs_warning_for_inaccessible_stream(self, mock_check):
-        mock_check.side_effect = lambda client, name, cfg: name != 'orders'
+        mock_check.side_effect = lambda client, name: name != 'orders'
         schemas = {'customers': {}, 'orders': {}, 'sku_items': {}}
         field_metadata = {'customers': [], 'orders': [], 'sku_items': []}
         with patch('tap_3plcentral.discover.LOGGER') as mock_logger:
@@ -217,7 +217,7 @@ class TestDiscover(unittest.TestCase):
     @patch('tap_3plcentral.discover.check_stream_access')
     def test_inaccessible_stream_excluded(self, mock_check):
         """A stream that fails the access check is excluded from the catalog."""
-        mock_check.side_effect = lambda client, name, cfg: name != 'orders'
+        mock_check.side_effect = lambda client, name: name != 'orders'
         catalog = discover(MagicMock())
         stream_names = [s.stream for s in catalog.streams]
         self.assertNotIn('orders', stream_names)
@@ -226,7 +226,7 @@ class TestDiscover(unittest.TestCase):
     @patch('tap_3plcentral.discover.check_stream_access')
     def test_child_excluded_when_parent_inaccessible(self, mock_check):
         """Child streams are excluded when their parent is inaccessible."""
-        mock_check.side_effect = lambda client, name, cfg: name != 'customers'
+        mock_check.side_effect = lambda client, name: name != 'customers'
         catalog = discover(MagicMock())
         stream_names = [s.stream for s in catalog.streams]
         self.assertNotIn('customers', stream_names)
