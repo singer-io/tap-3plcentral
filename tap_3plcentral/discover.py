@@ -6,7 +6,7 @@ from tap_3plcentral.client import TPLAPIError
 LOGGER = singer.get_logger()
 
 
-def check_stream_access(client, stream_name, stream_config) -> bool:
+def check_stream_access(client, stream_name) -> bool:
     """Probe a top-level stream endpoint (pgsz=1) to verify credentials have read access.
 
     Returns True if accessible, False on 401/403/404 (TPLAPIError with those codes).
@@ -66,7 +66,7 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict) -> None:
         for stream_name, stream_config in STREAMS.items()
         if stream_name in schemas
         and not stream_config.get('parent')
-        and not check_stream_access(client, stream_name, stream_config)
+        and not check_stream_access(client, stream_name)
     ]
 
     for stream_name in inaccessible_streams:
