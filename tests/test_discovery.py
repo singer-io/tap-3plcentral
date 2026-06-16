@@ -1,5 +1,6 @@
 """Mock integration test: discovery produces correct catalog and metadata."""
 import unittest
+from unittest.mock import MagicMock
 
 from singer import metadata
 
@@ -16,7 +17,7 @@ class DiscoveryIntegrationTest(ThreePLCentralMockBaseTest, unittest.TestCase):
 
     def test_discovery_expected_streams_and_metadata(self):
         """Verify discover() returns all expected streams with correct metadata."""
-        catalog = discover()
+        catalog = discover(MagicMock())
         stream_map = {stream.tap_stream_id: stream for stream in catalog.streams}
         expected_streams = self.expected_metadata()
 
@@ -47,7 +48,7 @@ class DiscoveryIntegrationTest(ThreePLCentralMockBaseTest, unittest.TestCase):
 
     def test_discovery_parent_stream_metadata(self):
         """Streams with parent have parent-tap-stream-id in metadata."""
-        catalog = discover()
+        catalog = discover(MagicMock())
         stream_map = {stream.tap_stream_id: stream for stream in catalog.streams}
 
         parent_expectations = {
@@ -71,7 +72,7 @@ class DiscoveryIntegrationTest(ThreePLCentralMockBaseTest, unittest.TestCase):
 
     def test_discovery_schema_properties_exist(self):
         """Each stream schema has at least one property."""
-        catalog = discover()
+        catalog = discover(MagicMock())
         for entry in catalog.streams:
             with self.subTest(stream=entry.tap_stream_id):
                 schema = entry.schema.to_dict()

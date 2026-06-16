@@ -91,7 +91,7 @@ class ThreePLCentralMockBaseTest:
     def _make_selected_catalog(stream_names=None):
         """Build a real catalog with selected=True for the given streams.
         If stream_names is None, select all streams."""
-        catalog = discover()
+        catalog = discover(MagicMock())
         from singer import metadata
         for entry in catalog.streams:
             mdata = metadata.to_map(entry.metadata)

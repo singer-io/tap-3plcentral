@@ -1,4 +1,8 @@
 # Changelog
+## 2.1.0
+  * Streams the credentials cannot access (401/403/404) are now excluded from the catalog during discovery instead of raising an error
+  * Added unit tests for stream access checks, access check application, and child stream pruning
+
 ## 2.0.0
   * Update python version. [#13](https://github.com/singer-io/tap-3plcentral/pull/13)
   * Update bookmark logic
