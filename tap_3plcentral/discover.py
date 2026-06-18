@@ -5,18 +5,36 @@ from tap_3plcentral.client import TPLAPIError
 
 LOGGER = singer.get_logger()
 
+DISCOVERY_PROBE_PATHS = {
+    'stock_summaries': 'inventory/stocksummaries',
+    'locations': 'inventory/facilities/{facility_id}/locations',
+}
 
-def check_stream_access(client, stream_name) -> bool:
-    """Probe a top-level stream endpoint (pgsz=1) to verify credentials have read access.
+
+def _get_probe_resource_path(stream_name, facility_id=None):
+    resource_path_template = DISCOVERY_PROBE_PATHS.get(stream_name, stream_name)
+    if '{facility_id}' in resource_path_template:
+        if facility_id:
+            return resource_path_template.format(facility_id=facility_id)
+        LOGGER.warning(
+            "No facility_id provided for stream '%s' access probe. Falling back to stream name path.",
+            stream_name,
+        )
+        return stream_name
+    return resource_path_template
+
+
+def check_stream_access(client, stream_name, facility_id=None) -> bool:
+    """Probe a top-level stream endpoint (pgsiz=1) to verify credentials have read access.
 
     Returns True if accessible, False on 401/403/404 (TPLAPIError with those codes).
     Any other exception is re-raised.
     Should only be called for top-level streams (those without a 'parent' key).
     """
-    # Use the stream name as the resource path for a minimal GET.
-    # pgsz=1 minimises the response payload.
-    resource_path = stream_name
-    querystring = 'pgsz=1'
+    # Use stream-specific resource path for a minimal GET.
+    # pgsiz=1 minimizes the response payload.
+    resource_path = _get_probe_resource_path(stream_name, facility_id=facility_id)
+    querystring = 'pgsiz=1'
     LOGGER.info("Checking access for stream '%s'", stream_name)
     try:
         client.get(
@@ -53,7 +71,7 @@ def _prune_inaccessible_children(schemas: dict, field_metadata: dict) -> None:
             field_metadata.pop(stream_name, None)
 
 
-def _apply_access_checks(client, schemas: dict, field_metadata: dict) -> None:
+def _apply_access_checks(client, schemas: dict, field_metadata: dict, facility_id=None) -> None:
     """Probe each top-level stream for read access and remove inaccessible streams
     (and their children) from schemas and field_metadata in place.
 
@@ -66,7 +84,7 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict) -> None:
         for stream_name, stream_config in STREAMS.items()
         if stream_name in schemas
         and not stream_config.get('parent')
-        and not check_stream_access(client, stream_name)
+        and not check_stream_access(client, stream_name, facility_id=facility_id)
     ]
 
     for stream_name in inaccessible_streams:
@@ -93,7 +111,7 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict) -> None:
         )
 
 
-def discover(client) -> Catalog:
+def discover(client, config=None) -> Catalog:
     """Run discovery and exclude streams the credentials cannot read.
 
     Access to each top-level stream is verified via check_stream_access().
@@ -101,7 +119,8 @@ def discover(client) -> Catalog:
     Child streams are excluded when their parent stream is inaccessible.
     """
     schemas, field_metadata = get_schemas()
-    _apply_access_checks(client, schemas, field_metadata)
+    facility_id = config.get('facility_id') if config else None
+    _apply_access_checks(client, schemas, field_metadata, facility_id=facility_id)
 
     catalog = Catalog([])
 
