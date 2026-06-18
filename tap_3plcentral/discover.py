@@ -25,12 +25,7 @@ def _get_probe_resource_path(stream_name, facility_id=None):
 
 
 def check_stream_access(client, stream_name, facility_id=None) -> bool:
-    """Probe a top-level stream endpoint (pgsiz=1) to verify credentials have read access.
-
-    Returns True if accessible, False on 401/403/404 (TPLAPIError with those codes).
-    Any other exception is re-raised.
-    Should only be called for top-level streams (those without a 'parent' key).
-    """
+    """Probe top-level stream read access with a minimal request; return False only on 401/403/404."""
     # Use stream-specific resource path for a minimal GET.
     # pgsiz=1 minimizes the response payload.
     resource_path = _get_probe_resource_path(stream_name, facility_id=facility_id)
