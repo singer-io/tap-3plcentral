@@ -41,11 +41,11 @@ class TestCheckStreamAccess(unittest.TestCase):
         result = check_stream_access(client, 'orders')
         self.assertFalse(result)
 
-    def test_returns_false_on_404(self):
+    def test_reraises_on_404(self):
         client = MagicMock()
         client.get.side_effect = TPLAPIError('Not Found', error_code=404)
-        result = check_stream_access(client, 'locations', facility_id='123')
-        self.assertFalse(result)
+        with self.assertRaises(TPLAPIError):
+            check_stream_access(client, 'locations', facility_id='123')
 
     def test_uses_mapped_stock_summaries_resource_path(self):
         client = MagicMock()
