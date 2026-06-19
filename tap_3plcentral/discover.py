@@ -34,7 +34,7 @@ def check_stream_access(client, stream_name, facility_id=None) -> bool:
     try:
         client.get(
             resource_path=resource_path,
-            querystring=querystring,
+            querystring=query_string,
             endpoint=stream_name,
         )
         return True
