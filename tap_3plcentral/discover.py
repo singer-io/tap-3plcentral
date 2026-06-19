@@ -88,20 +88,17 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict, facility_i
 
     _prune_inaccessible_children(schemas, field_metadata)
 
-    if inaccessible_streams:
-        accessible_top_level = sum(
-            1 for name in schemas
-            if not STREAMS.get(name, {}).get('parent')
+    accessible_streams = [s for s in STREAMS if s in schemas]
+
+    if not accessible_streams:
+        raise TPLAPIError(
+            "HTTP-error-code: 403, Error: The credentials do not have "
+            "'read' access to any supported streams.",
+            error_code=403,
         )
-        if accessible_top_level == 0:
-            raise TPLAPIError(
-                "HTTP-error-code: 403, Error: The account credentials supplied do not have 'read' access to any "
-                "of the streams supported by the tap. Data collection cannot be initiated due to lack of permissions.",
-                error_code=403,
-            )
+    if inaccessible_streams:
         LOGGER.warning(
-            "The account credentials supplied do not have 'read' access to the following stream(s): %s. "
-            "These streams have been excluded from the catalog.",
+            "No 'read' access to stream(s): %s. Excluded from catalog.",
             ", ".join(inaccessible_streams),
         )
 
