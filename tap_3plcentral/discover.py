@@ -29,7 +29,7 @@ def check_stream_access(client, stream_name, facility_id=None) -> bool:
     # Use stream-specific resource path for a minimal GET.
     # pgsiz=1 minimizes the response payload.
     resource_path = _get_probe_resource_path(stream_name, facility_id=facility_id)
-    querystring = 'pgsiz=1'
+    query_string = 'pgsiz=1'
     LOGGER.info("Checking access for stream '%s'", stream_name)
     try:
         client.get(
