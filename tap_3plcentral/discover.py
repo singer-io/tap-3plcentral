@@ -94,13 +94,14 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict, facility_i
 
     if not accessible_streams:
         raise TPLAPIError(
-            "HTTP-error-code: 403, Error: The credentials do not have "
+            "No streams are accessible. Ensure the credentials have read permission for at least one stream."
+      
             "'read' access to any supported streams.",
             error_code=403,
         )
     if inaccessible_streams:
         LOGGER.warning(
-            "No 'read' access to stream(s): %s. Excluded from catalog.",
+            "Unauthorized streams excluded from catalog: %s",
             ", ".join(inaccessible_streams),
         )
 
