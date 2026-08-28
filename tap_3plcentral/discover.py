@@ -95,7 +95,6 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict, facility_i
     if not accessible_streams:
         raise TPLAPIError(
             "No streams are accessible. Ensure the credentials have read permission for at least one stream."
-      
             "'read' access to any supported streams.",
             error_code=403,
         )

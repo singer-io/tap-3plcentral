@@ -162,7 +162,7 @@ class TestApplyAccessChecks(unittest.TestCase):
         field_metadata = {'customers': [], 'orders': [], 'sku_items': []}
         with self.assertRaises(TPLAPIError) as ctx:
             _apply_access_checks(MagicMock(), schemas, field_metadata)
-        self.assertIn("do not have 'read' access to any", str(ctx.exception))
+        self.assertIn("No streams are accessible.", str(ctx.exception))
 
     @patch('tap_3plcentral.discover.check_stream_access')
     def test_no_changes_when_all_accessible(self, mock_check):
@@ -277,7 +277,7 @@ class TestDiscover(unittest.TestCase):
         mock_check.return_value = False
         with self.assertRaises(TPLAPIError) as ctx:
             discover(MagicMock())
-        self.assertIn("do not have 'read' access to any", str(ctx.exception))
+        self.assertIn("No streams are accessible.", str(ctx.exception))
 
 
 # ---------------------------------------------------------------------------
