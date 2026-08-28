@@ -28,7 +28,14 @@ jobs:
           name: 'Unit Tests'
           command: |
             source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
-            python -m pytest tests/unittests/ -v
+            uv pip install coverage
+            python -m coverage run --source tap_3plcentral -m pytest tests/unittests/ -v
+      - run:
+          name: 'Coverage Report'
+          command: |
+            source /usr/local/share/virtualenvs/tap-3plcentral/bin/activate
+            python -m coverage report -m --fail-under=99
+            python -m coverage html
       - run:
           name: 'Integration Tests'
           command: |
