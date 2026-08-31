@@ -80,6 +80,29 @@ class TestCheckStreamAccess(unittest.TestCase):
         with self.assertRaises(ConnectionError):
             check_stream_access(client, 'customers')
 
+    @patch('tap_3plcentral.discover.LOGGER')
+    def test_logs_warning_with_error_msg_on_401(self, mock_logger):
+        """LOGGER.warning is called with stream name and tpl_error_msg on 401."""
+        client = MagicMock()
+        client.get.side_effect = TPLAPIError('Unauthorized', error_code=401, tpl_error_msg='token expired')
+        check_stream_access(client, 'orders')
+        mock_logger.warning.assert_called_once()
+        args = mock_logger.warning.call_args[0]
+        self.assertIn('orders', args)
+        self.assertIn('token expired', args)
+
+    @patch('tap_3plcentral.discover.LOGGER')
+    def test_logs_warning_with_bytes_error_msg(self, mock_logger):
+        """tpl_error_msg as bytes is passed through to the logger without crashing."""
+        client = MagicMock()
+        client.get.side_effect = TPLAPIError('Forbidden', error_code=403, tpl_error_msg=b'access denied')
+        result = check_stream_access(client, 'inventory')
+        self.assertFalse(result)
+        mock_logger.warning.assert_called_once()
+        args = mock_logger.warning.call_args[0]
+        self.assertIn('inventory', args)
+        self.assertIn(b'access denied', args)
+
 
 # ---------------------------------------------------------------------------
 # _prune_inaccessible_children
@@ -183,6 +206,38 @@ class TestApplyAccessChecks(unittest.TestCase):
             _apply_access_checks(MagicMock(), schemas, field_metadata)
         warning_msgs = ' '.join(str(c) for c in mock_logger.warning.call_args_list)
         self.assertIn('orders', warning_msgs)
+
+    @patch('tap_3plcentral.discover.check_stream_access')
+    def test_raises_error_message_when_no_streams_accessible(self, mock_check):
+        """The TPLAPIError message includes both sentences and error_code 403."""
+        mock_check.return_value = False
+        schemas = {'customers': {}, 'orders': {}, 'sku_items': {}}
+        field_metadata = {'customers': [], 'orders': [], 'sku_items': []}
+        with self.assertRaises(TPLAPIError) as ctx:
+            _apply_access_checks(MagicMock(), schemas, field_metadata)
+        self.assertEqual(ctx.exception.error_code, 403)
+        self.assertIn("No streams are accessible", str(ctx.exception))
+
+    @patch('tap_3plcentral.discover.check_stream_access')
+    def test_warning_lists_sorted_deduped_inaccessible_streams(self, mock_check):
+        """The warning message lists inaccessible streams sorted and deduplicated."""
+        mock_check.side_effect = lambda client, name, **kwargs: name != 'customers'
+        schemas = {'customers': {}, 'sku_items': {}, 'stock_details': {}, 'orders': {}}
+        field_metadata = {'customers': [], 'sku_items': [], 'stock_details': [], 'orders': []}
+        with patch('tap_3plcentral.discover.LOGGER') as mock_logger:
+            _apply_access_checks(MagicMock(), schemas, field_metadata)
+        # Find the call that logs the "Unauthorized streams excluded" message
+        excluded_call = [
+            c for c in mock_logger.warning.call_args_list
+            if 'Unauthorized streams excluded' in str(c)
+        ]
+        self.assertEqual(len(excluded_call), 1)
+        logged_names = excluded_call[0][0][1]
+        self.assertIn('customers', logged_names)
+        self.assertIn('sku_items', logged_names)
+        self.assertIn('stock_details', logged_names)
+        # Verify sorted order
+        self.assertEqual(logged_names, ', '.join(sorted(['customers', 'sku_items', 'stock_details'])))
 
 
 # ---------------------------------------------------------------------------
