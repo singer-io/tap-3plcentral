@@ -30,7 +30,6 @@ def check_stream_access(client, stream_name, facility_id=None) -> bool:
     # pgsiz=1 minimizes the response payload.
     resource_path = _get_probe_resource_path(stream_name, facility_id=facility_id)
     query_string = 'pgsiz=1'
-    LOGGER.info("Checking access for stream '%s'", stream_name)
     try:
         client.get(
             resource_path=resource_path,
@@ -41,10 +40,8 @@ def check_stream_access(client, stream_name, facility_id=None) -> bool:
     except TPLAPIError as ex:
         if ex.error_code in (401, 403):
             LOGGER.warning(
-                "Excluding unauthorized stream '%s' from catalog (HTTP %s %s). Details: %r",
+                "Unauthorized Stream: %s, excluding from catalog. HTTP-Error-Message:'%s'",
                 stream_name,
-                ex.error_code,
-                ex.msg,
                 ex.tpl_error_msg,
             )
             return False
@@ -56,6 +53,7 @@ def _prune_inaccessible_children(schemas: dict, field_metadata: dict) -> None:
 
     Mutates schemas and field_metadata in place.
     """
+    to_remove = []
     for stream_name, stream_config in list(STREAMS.items()):
         parent = stream_config.get('parent')
         if stream_name in schemas and parent and parent not in schemas:
@@ -66,6 +64,8 @@ def _prune_inaccessible_children(schemas: dict, field_metadata: dict) -> None:
             )
             schemas.pop(stream_name, None)
             field_metadata.pop(stream_name, None)
+            to_remove.append(stream_name)
+    return to_remove
 
 
 def _apply_access_checks(client, schemas: dict, field_metadata: dict, facility_id=None) -> None:
@@ -88,7 +88,8 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict, facility_i
         schemas.pop(stream_name, None)
         field_metadata.pop(stream_name, None)
 
-    _prune_inaccessible_children(schemas, field_metadata)
+    inaccessible_children = _prune_inaccessible_children(schemas, field_metadata)
+    inaccessible_streams.extend(inaccessible_children)
 
     accessible_streams = [s for s in STREAMS if s in schemas]
 
@@ -101,7 +102,7 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict, facility_i
     if inaccessible_streams:
         LOGGER.warning(
             "Unauthorized streams excluded from catalog: %s",
-            ", ".join(inaccessible_streams),
+            ", ".join(sorted(set(inaccessible_streams))),
         )
 
 

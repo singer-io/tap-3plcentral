@@ -38,7 +38,10 @@ class TPLAPIError(TPLBaseError):
 
     def __str__(self):
         """Include custom msg"""
-        return repr(self.msg + self.tpl_error_msg)
+        tpl_msg = self.tpl_error_msg
+        if isinstance(tpl_msg, bytes):
+            tpl_msg = tpl_msg.decode('utf-8', errors='replace')
+        return repr(self.msg + tpl_msg)
 
 
 class TPLClient(object):
