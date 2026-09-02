@@ -101,7 +101,7 @@ def process_records(catalog, #pylint: disable=too-many-branches
 
 
 # Sync a specific parent or child endpoint.
-def sync_endpoint(client, #pylint: disable=too-many-branches
+def sync_endpoint(client, #pylint: disable=too-many-branches,too-many-statements,too-many-nested-blocks
                   catalog,
                   state,
                   start_date,
@@ -154,18 +154,19 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
         if bookmark_query_field:
             if 'rql' in params:
                 if bookmark_type == 'datetime':
-                    params['rql'] = '{};{}=ge={}'.format(params['rql'], bookmark_query_field, last_datetime)
+                    params['rql'] = f"{params['rql']};{bookmark_query_field}=ge={last_datetime}"
                 elif bookmark_type == 'integer':
-                    params['rql'] = '{};{}=ge={}'.format(params['rql'], bookmark_query_field, last_integer)
+                    params['rql'] = f"{params['rql']};{bookmark_query_field}=ge={last_integer}"
             else:
                 if bookmark_type == 'datetime':
-                    params['rql'] = '{}=ge={}'.format(bookmark_query_field, last_datetime)
+                    params['rql'] = f"{bookmark_query_field}=ge={last_datetime}"
                 elif bookmark_type == 'integer':
-                    params['rql'] = '{}=ge={}'.format(bookmark_query_field, last_integer)
+                    params['rql'] = f"{bookmark_query_field}=ge={last_integer}"
 
-        LOGGER.info('{} - Sync start'.format(
-            stream_name,
-            'since: {}, '.format(last_datetime) if bookmark_query_field else ''))
+        if bookmark_query_field:
+            LOGGER.info("%s - Sync start since: %s", stream_name, last_datetime)
+        else:
+            LOGGER.info("%s - Sync start", stream_name)
 
         # Squash params to query-string params
         querystring = '&'.join(['%s=%s' % (key, value) for (key, value) in params.items()])
@@ -225,27 +226,29 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
         children = endpoint_config.get('children')
         if children:
             for child_stream_name, child_endpoint_config in children.items():
-                should_stream, last_stream_child = should_sync_stream(get_selected_streams(catalog),
-                                                            None,
-                                                            child_stream_name)
+                should_stream, _ = should_sync_stream(
+                    get_selected_streams(catalog),
+                    None,
+                    child_stream_name,
+                )
                 if should_stream:
                     # For each parent record
                     for record in transformed_data:
-                        i = 0
-                        # Set parent_id
-                        for id_field in id_fields:
-                            if i == 0:
-                                parent_id_field = id_field
+                        parent_id_field = id_fields[0] if id_fields else 'id'
+                        # Prefer canonical id if present
+                        for id_field in (id_fields or []):
                             if id_field == 'id':
                                 parent_id_field = id_field
-                            i = i + 1
+                                break
                         parent_id = record.get(parent_id_field)
 
                         # sync_endpoint for child
-                        LOGGER.info('Syncing: {}, parent_stream: {}, parent_id: {}'.format(
+                        LOGGER.info(
+                            "Syncing: %s, parent_stream: %s, parent_id: %s",
                             child_stream_name,
                             stream_name,
-                            parent_id))
+                            parent_id,
+                        )
                         child_path = child_endpoint_config.get('path').format(str(parent_id))
                         child_total_records = sync_endpoint(
                             client=client,
@@ -263,10 +266,12 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
                             id_fields=child_endpoint_config.get('id_fields'),
                             parent=child_endpoint_config.get('parent'),
                             parent_id=parent_id)
-                        LOGGER.info('Synced: {}, parent_id: {}, total_records: {}'.format(
-                            child_stream_name, 
+                        LOGGER.info(
+                            "Synced: %s, parent_id: %s, total_records: %s",
+                            child_stream_name,
                             parent_id,
-                            child_total_records))
+                            child_total_records,
+                        )
 
         # Update the state with the max_bookmark_value for the stream
         if bookmark_field:
@@ -275,10 +280,7 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
                            bookmark_field,
                            max_bookmark_value)
 
-        LOGGER.info('{} - Synced - page: {}, total pages: {}'.format(
-            stream_name,
-            page,
-            total_pages))
+        LOGGER.info("%s - Synced - page: %s, total pages: %s", stream_name, page, total_pages)
         page = page + 1
 
     # Return total_records across all batches
@@ -320,6 +322,8 @@ def should_sync_stream(selected_streams, last_stream, stream_name):
 
 
 def sync(client, config, catalog, state, start_date):
+    customer_id = None
+    facility_id = None
     if 'start_date' in config:
         start_date = config['start_date']
     if 'customer_id' in config:
@@ -328,14 +332,14 @@ def sync(client, config, catalog, state, start_date):
         facility_id = config['facility_id']
 
     selected_streams = get_selected_streams(catalog)
-    LOGGER.info('selected_streams: {}'.format(selected_streams))
+    LOGGER.info('selected_streams: %s', selected_streams)
 
     if not selected_streams:
         return
 
     # last_stream = Previous currently synced stream, if the load was interrupted
     last_stream = singer.get_currently_syncing(state)
-    LOGGER.info('last/currently syncing stream: {}'.format(last_stream))
+    LOGGER.info('last/currently syncing stream: %s', last_stream)
 
     # endpoints: API URL endpoints to be called
     # properties:
@@ -441,7 +445,7 @@ def sync(client, config, catalog, state, start_date):
                                                         last_stream,
                                                         stream_name)
         if should_stream:
-            LOGGER.info('START Syncing: {}'.format(stream_name))
+            LOGGER.info('START Syncing: %s', stream_name)
             update_currently_syncing(state, stream_name)
             if stream_name == 'locations':
                 path = endpoint_config.get('path').format(facility_id)
@@ -463,7 +467,5 @@ def sync(client, config, catalog, state, start_date):
                 id_fields=endpoint_config.get('id_fields'))
 
             update_currently_syncing(state, None)
-            LOGGER.info('Synced: {}, total_records: {}'.format(
-                            stream_name, 
-                            total_records))
-            LOGGER.info('FINISHED Syncing: {}'.format(stream_name))
+            LOGGER.info('Synced: %s, total_records: %s', stream_name, total_records)
+            LOGGER.info('FINISHED Syncing: %s', stream_name)
