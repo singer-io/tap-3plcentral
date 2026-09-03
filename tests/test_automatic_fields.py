@@ -1,6 +1,7 @@
 """Mock integration test: automatic (primary key / replication key) fields are
 always marked as inclusion=automatic in metadata."""
 import unittest
+from unittest.mock import MagicMock
 
 from singer import metadata
 
@@ -13,7 +14,7 @@ class AutomaticFieldsIntegrationTest(unittest.TestCase):
     def test_primary_and_replication_keys_are_automatic(self):
         """Verify that all primary keys and replication keys are marked
         as inclusion=automatic in discovery metadata."""
-        catalog = discover()
+        catalog = discover(MagicMock())
 
         for stream in catalog.streams:
             with self.subTest(stream=stream.tap_stream_id):

@@ -61,7 +61,7 @@ def denest_embedded_readonly_nodes(this_json, path=None):
                 if node in record['_embedded']:
                     this_json[path][i][node] = this_json[path][i]['_embedded'][node]    
                 i = i + 1
-            del record['embedded']
+            del record['_embedded']
     return this_json
 
 

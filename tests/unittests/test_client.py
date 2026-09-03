@@ -170,6 +170,13 @@ class TestTPLClientStatusCodes(unittest.TestCase):
             self.client._check_status_code(418, "teapot")
         self.assertIn("Unknown error", ctx.exception.msg)
 
+    def test_check_status_code_404_raises_not_found(self):
+        """Test that 404 raises TPLAPIError with correct status and message."""
+        with self.assertRaises(TPLAPIError) as ctx:
+            self.client._check_status_code(404, "not found")
+        self.assertEqual(ctx.exception.error_code, 404)
+        self.assertIn("Not Found", ctx.exception.msg)
+
 
 class TestTPLClientExecute(unittest.TestCase):
     """Tests for _execute retry/backoff behavior."""
