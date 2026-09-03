@@ -43,8 +43,9 @@ def check_stream_access(client, stream_name, facility_id=None) -> bool:
     except TPLAPIError as ex:
         if ex.error_code == 403:
             LOGGER.warning(
-                "Unauthorized Stream: %s, excluding from catalog. HTTP-Error-Message:'%s'",
+                "Unauthorized Stream: %s, excluding from catalog. HTTP-Status:%s, HTTP-Error-Message:'%s'",
                 stream_name,
+                ex.error_code,
                 ex.tpl_error_msg,
             )
             return False
