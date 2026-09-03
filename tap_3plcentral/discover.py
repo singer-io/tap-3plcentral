@@ -25,7 +25,10 @@ def _get_probe_resource_path(stream_name, facility_id=None):
 
 
 def check_stream_access(client, stream_name, facility_id=None) -> bool:
-    """Probe top-level stream read access with a minimal request; return False only on 401/403/404."""
+    """Probe top-level stream read access with a minimal request; return False only on 403.
+
+    401 is re-raised (invalid credentials, not a per-stream permission issue).
+    """
     # Use stream-specific resource path for a minimal GET.
     # pgsiz=1 minimizes the response payload.
     resource_path = _get_probe_resource_path(stream_name, facility_id=facility_id)
@@ -38,7 +41,7 @@ def check_stream_access(client, stream_name, facility_id=None) -> bool:
         )
         return True
     except TPLAPIError as ex:
-        if ex.error_code in (401, 403):
+        if ex.error_code == 403:
             LOGGER.warning(
                 "Unauthorized Stream: %s, excluding from catalog. HTTP-Error-Message:'%s'",
                 stream_name,
@@ -74,15 +77,26 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict, facility_i
 
     Child streams are skipped during probing — their removal is handled separately
     by _prune_inaccessible_children().
-    Raises TPLAPIError if no top-level streams remain accessible.
+    Fails fast with TPLAPIError on the first 401 (invalid credentials), and raises
+    TPLAPIError if no top-level streams remain accessible after 403 exclusions.
     """
-    inaccessible_streams = [
-        stream_name
-        for stream_name, stream_config in STREAMS.items()
-        if stream_name in schemas
-        and not stream_config.get('parent')
-        and not check_stream_access(client, stream_name, facility_id=facility_id)
-    ]
+    inaccessible_streams = []
+    for stream_name, stream_config in STREAMS.items():
+        if stream_name not in schemas or stream_config.get('parent'):
+            continue
+        try:
+            accessible = check_stream_access(client, stream_name, facility_id=facility_id)
+        except TPLAPIError as ex:
+            if ex.error_code == 401:
+                raise TPLAPIError(
+                    "Invalid credentials. Authentication failed while probing "
+                    f"stream '{stream_name}'.",
+                    error_code=401,
+                    tpl_error_msg=ex.tpl_error_msg,
+                ) from ex
+            raise
+        if not accessible:
+            inaccessible_streams.append(stream_name)
 
     for stream_name in inaccessible_streams:
         schemas.pop(stream_name, None)
@@ -95,8 +109,8 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict, facility_i
 
     if not accessible_streams:
         raise TPLAPIError(
-            "No streams are accessible. Ensure the credentials have read permission for at least one stream."
-            "'read' access to any supported streams.",
+            "No streams are accessible. Ensure the credentials have 'read' access "
+            "to at least one supported stream.",
             error_code=403,
         )
     if inaccessible_streams:

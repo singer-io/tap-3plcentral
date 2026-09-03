@@ -29,11 +29,12 @@ class TestCheckStreamAccess(unittest.TestCase):
             endpoint='customers',
         )
 
-    def test_returns_false_on_401(self):
+    def test_reraises_on_401(self):
+        """401 (invalid credentials) is re-raised, not treated as a per-stream exclusion."""
         client = MagicMock()
         client.get.side_effect = TPLAPIError('Unauthorized', error_code=401)
-        result = check_stream_access(client, 'customers')
-        self.assertFalse(result)
+        with self.assertRaises(TPLAPIError):
+            check_stream_access(client, 'customers')
 
     def test_returns_false_on_403(self):
         client = MagicMock()
@@ -81,14 +82,15 @@ class TestCheckStreamAccess(unittest.TestCase):
             check_stream_access(client, 'customers')
 
     @patch('tap_3plcentral.discover.LOGGER')
-    def test_logs_warning_with_error_msg_on_401(self, mock_logger):
-        """LOGGER.warning is called with stream name and tpl_error_msg on 401."""
+    def test_logs_warning_with_error_msg_on_403(self, mock_logger):
+        """LOGGER.warning is called with stream name, status code, and tpl_error_msg on 403."""
         client = MagicMock()
-        client.get.side_effect = TPLAPIError('Unauthorized', error_code=401, tpl_error_msg='token expired')
+        client.get.side_effect = TPLAPIError('Forbidden', error_code=403, tpl_error_msg='token expired')
         check_stream_access(client, 'orders')
         mock_logger.warning.assert_called_once()
         args = mock_logger.warning.call_args[0]
         self.assertIn('orders', args)
+        self.assertIn(403, args)
         self.assertIn('token expired', args)
 
     @patch('tap_3plcentral.discover.LOGGER')
@@ -217,6 +219,28 @@ class TestApplyAccessChecks(unittest.TestCase):
             _apply_access_checks(MagicMock(), schemas, field_metadata)
         self.assertEqual(ctx.exception.error_code, 403)
         self.assertIn("No streams are accessible", str(ctx.exception))
+
+    @patch('tap_3plcentral.discover.check_stream_access')
+    def test_fails_fast_on_401(self, mock_check):
+        """A 401 from any top-level probe raises immediately with error_code 401,
+        instead of being treated as a per-stream exclusion."""
+        mock_check.side_effect = TPLAPIError('Unauthorized', error_code=401, tpl_error_msg='bad token')
+        schemas = {'customers': {}, 'orders': {}, 'sku_items': {}}
+        field_metadata = {'customers': [], 'orders': [], 'sku_items': []}
+        with self.assertRaises(TPLAPIError) as ctx:
+            _apply_access_checks(MagicMock(), schemas, field_metadata)
+        self.assertEqual(ctx.exception.error_code, 401)
+        self.assertIn('customers', str(ctx.exception))
+
+    @patch('tap_3plcentral.discover.check_stream_access')
+    def test_does_not_probe_remaining_streams_after_401(self, mock_check):
+        """Probing stops at the first 401 instead of checking every remaining stream."""
+        mock_check.side_effect = TPLAPIError('Unauthorized', error_code=401)
+        schemas = {'customers': {}, 'orders': {}, 'sku_items': {}}
+        field_metadata = {'customers': [], 'orders': [], 'sku_items': []}
+        with self.assertRaises(TPLAPIError):
+            _apply_access_checks(MagicMock(), schemas, field_metadata)
+        mock_check.assert_called_once()
 
     @patch('tap_3plcentral.discover.check_stream_access')
     def test_warning_lists_sorted_deduped_inaccessible_streams(self, mock_check):
