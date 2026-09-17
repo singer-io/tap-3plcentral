@@ -269,12 +269,11 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
 
         if total_pages > max_pages:
             LOGGER.warning(
-                '%s - clamping calculated total pages (%s) to max_pages limit (%s).',
+                '%s - calculated total pages (%s) exceeds max_pages (%s); pagination will stop with an error if this limit is crossed.',
                 stream_name,
                 total_pages,
                 max_pages,
             )
-            total_pages = max_pages
 
         # Loop thru parent batch records for each children objects (if should stream)
         children = endpoint_config.get('children')
