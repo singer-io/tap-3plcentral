@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch, call
 
 import singer
 from tap_3plcentral.sync import (
+    RequestBudget,
     get_bookmark,
     write_bookmark,
     write_schema,
@@ -605,6 +606,50 @@ class TestSyncEndpointPaginationSafety(unittest.TestCase):
         )
 
         self.assertEqual(client.get.call_count, 1)
+
+    @patch("tap_3plcentral.sync.process_records", return_value=(None, 1))
+    @patch("tap_3plcentral.sync.write_schema")
+    @patch("tap_3plcentral.sync.transform_json")
+    def test_request_budget_is_shared_across_streams(
+        self,
+        mock_transform_json,
+        _mock_write_schema,
+        _mock_process_records,
+    ):
+        """A shared budget is consumed across separate sync_endpoint calls (parent/child fan-out)."""
+        mock_transform_json.return_value = {"resource_list": [{"ReceiveItemId": 1}]}
+
+        client = MagicMock()
+        client.get.return_value = {
+            "TotalResults": 1,
+            "ResourceList": [{"ReceiveItemId": 1}],
+        }
+
+        budget = RequestBudget(max_requests=2)
+
+        def run_stream():
+            sync_endpoint(
+                client=client,
+                catalog=MagicMock(),
+                state={},
+                start_date="2026-01-01T00:00:00Z",
+                stream_name="inventory",
+                path="inventory",
+                endpoint_config={"params": {"pgsiz": 200}},
+                data_key="ResourceList",
+                static_params={"pgsiz": 200},
+                request_budget=budget,
+            )
+
+        run_stream()
+        run_stream()
+
+        # Third call must fail because the budget is shared, not reset per call.
+        with self.assertRaises(RuntimeError):
+            run_stream()
+
+        self.assertEqual(client.get.call_count, 2)
+        self.assertEqual(budget.request_count, 2)
 
 
 if __name__ == "__main__":

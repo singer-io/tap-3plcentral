@@ -10,6 +10,29 @@ LOGGER = singer.get_logger()
 
 MAX_PAGES_PER_STREAM = 10000
 MAX_REQUESTS_PER_STREAM = 10000
+# Aggregate ceiling for a single extraction (all streams, including parent/child recursion).
+MAX_REQUESTS_PER_EXTRACTION = 50000
+
+
+class RequestBudget:
+    """Tracks API requests across an entire extraction, including child streams.
+
+    Per-stream limits alone do not bound parent/child recursion, because each nested
+    sync_endpoint() call would otherwise receive a fresh budget. This shared counter
+    enforces an extraction-wide ceiling.
+    """
+
+    def __init__(self, max_requests=MAX_REQUESTS_PER_EXTRACTION):
+        self.max_requests = max_requests
+        self.request_count = 0
+
+    def consume(self, stream_name):
+        if self.request_count >= self.max_requests:
+            raise RuntimeError(
+                '{} aborted: extraction exceeded max request limit ({}).'.format(
+                    stream_name, self.max_requests)
+            )
+        self.request_count = self.request_count + 1
 
 
 def write_schema(catalog, stream_name):
@@ -120,10 +143,13 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
                   bookmark_type=None,
                   id_fields=None,
                   parent=None,
-                  parent_id=None):
+                  parent_id=None,
+                  request_budget=None):
 
     max_pages = endpoint_config.get('max_pages', MAX_PAGES_PER_STREAM)
     max_requests = endpoint_config.get('max_requests', MAX_REQUESTS_PER_STREAM)
+    if request_budget is None:
+        request_budget = RequestBudget()
     request_count = 0
     previous_page_fingerprint = None
 
@@ -190,6 +216,9 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
         querystring = '&'.join(['%s=%s' % (key, value) for (key, value) in params.items()])
 
         # Get data, API request
+        # Consume from the shared extraction budget before issuing the request so that
+        # parent/child recursion cannot exceed the overall ceiling.
+        request_budget.consume(stream_name)
         data = client.get(
             path,
             querystring=querystring,
@@ -320,7 +349,8 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
                             bookmark_type=child_endpoint_config.get('bookmark_type'),
                             id_fields=child_endpoint_config.get('id_fields'),
                             parent=child_endpoint_config.get('parent'),
-                            parent_id=parent_id)
+                            parent_id=parent_id,
+                            request_budget=request_budget)
                         LOGGER.info('Synced: {}, parent_id: {}, total_records: {}'.format(
                             child_stream_name, 
                             parent_id,
@@ -413,6 +443,9 @@ def sync(client, config, catalog, state, start_date):
     # last_stream = Previous currently synced stream, if the load was interrupted
     last_stream = singer.get_currently_syncing(state)
     LOGGER.info('last/currently syncing stream: {}'.format(last_stream))
+
+    # Shared across every stream (and their child streams) for this extraction.
+    request_budget = RequestBudget()
 
     # endpoints: API URL endpoints to be called
     # properties:
@@ -537,7 +570,8 @@ def sync(client, config, catalog, state, start_date):
                 bookmark_query_field=endpoint_config.get('bookmark_query_field'),
                 bookmark_field=endpoint_config.get('bookmark_field'),
                 bookmark_type=endpoint_config.get('bookmark_type'),
-                id_fields=endpoint_config.get('id_fields'))
+                id_fields=endpoint_config.get('id_fields'),
+                request_budget=request_budget)
 
             update_currently_syncing(state, None)
             LOGGER.info('Synced: {}, total_records: {}'.format(
