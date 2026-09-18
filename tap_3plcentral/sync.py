@@ -1,10 +1,38 @@
 from datetime import datetime
+import hashlib
+import json
 import math
 import singer
 from singer import metrics, metadata, Transformer, utils
 from tap_3plcentral.transform import transform_json, convert
 
 LOGGER = singer.get_logger()
+
+MAX_PAGES_PER_STREAM = 10000
+MAX_REQUESTS_PER_STREAM = 10000
+# Aggregate ceiling for a single extraction (all streams, including parent/child recursion).
+MAX_REQUESTS_PER_EXTRACTION = 50000
+
+
+class RequestBudget:
+    """Tracks API requests across an entire extraction, including child streams.
+
+    Per-stream limits alone do not bound parent/child recursion, because each nested
+    sync_endpoint() call would otherwise receive a fresh budget. This shared counter
+    enforces an extraction-wide ceiling.
+    """
+
+    def __init__(self, max_requests=MAX_REQUESTS_PER_EXTRACTION):
+        self.max_requests = max_requests
+        self.request_count = 0
+
+    def consume(self, stream_name):
+        if self.request_count >= self.max_requests:
+            raise RuntimeError(
+                '{} aborted: extraction exceeded max request limit ({}).'.format(
+                    stream_name, self.max_requests)
+            )
+        self.request_count = self.request_count + 1
 
 
 def write_schema(catalog, stream_name):
@@ -115,7 +143,15 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
                   bookmark_type=None,
                   id_fields=None,
                   parent=None,
-                  parent_id=None):
+                  parent_id=None,
+                  request_budget=None):
+
+    max_pages = endpoint_config.get('max_pages', MAX_PAGES_PER_STREAM)
+    max_requests = endpoint_config.get('max_requests', MAX_REQUESTS_PER_STREAM)
+    if request_budget is None:
+        request_budget = RequestBudget()
+    request_count = 0
+    previous_page_fingerprint = None
 
     # Get the latest bookmark for the stream and set the last_integer/datetime
     last_datetime = None
@@ -140,6 +176,15 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
     total_pages = 1  # initial value, set with first API call
     total_records = 0 # total number of result records (across all batches)
     while page <= total_pages:
+        if page > max_pages:
+            raise RuntimeError(
+                '{} pagination exceeded max pages limit ({}).'.format(stream_name, max_pages)
+            )
+        if request_count >= max_requests:
+            raise RuntimeError(
+                '{} request count exceeded max request limit ({}).'.format(stream_name, max_requests)
+            )
+
         params = {
             'pgnum': page,
             **static_params # adds in endpoint specific, sort, filter params
@@ -171,10 +216,14 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
         querystring = '&'.join(['%s=%s' % (key, value) for (key, value) in params.items()])
 
         # Get data, API request
+        # Consume from the shared extraction budget before issuing the request so that
+        # parent/child recursion cannot exceed the overall ceiling.
+        request_budget.consume(stream_name)
         data = client.get(
             path,
             querystring=querystring,
             endpoint=stream_name)
+        request_count = request_count + 1
         # time_extracted: datetime when the data was extracted from the API
         time_extracted = utils.now()
         if not data or data is None or data == []:
@@ -196,6 +245,22 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
         if not transformed_data or transformed_data is None:
             break # No data results
 
+        page_fingerprint = hashlib.md5(
+            json.dumps(transformed_data, sort_keys=True, default=str).encode('utf-8')
+        ).hexdigest()
+        if previous_page_fingerprint == page_fingerprint:
+            if total_pages > max_pages:
+                raise RuntimeError(
+                    '{} pagination exceeded max pages limit ({}).'.format(stream_name, max_pages)
+                )
+            LOGGER.warning(
+                '%s - repeated page payload detected at page %s; stopping pagination to prevent amplification.',
+                stream_name,
+                page,
+            )
+            break
+        previous_page_fingerprint = page_fingerprint
+
         # Process records and get the max_bookmark_value and record_count for the set of records
         max_bookmark_value, record_count = process_records(
             catalog=catalog,
@@ -212,14 +277,36 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
 
         # set page and total_pages for pagination
         if 'TotalResults' in data:
-            total_records = data['TotalResults']
-            if total_records < page_size:
-                total_pages = 1
+            parsed_total_results = None
+            try:
+                parsed_total_results = int(data['TotalResults'])
+            except (TypeError, ValueError):
+                LOGGER.warning(
+                    '%s - invalid TotalResults value (%s); falling back to record-based termination.',
+                    stream_name,
+                    data['TotalResults'],
+                )
+
+            if parsed_total_results is not None and parsed_total_results >= 0:
+                total_records = parsed_total_results
+                if total_records < page_size:
+                    total_pages = 1
+                else:
+                    total_pages = math.ceil(total_records / page_size)
             else:
-                total_pages = math.ceil(total_records / page_size)
+                total_pages = page
+                total_records = record_count
         else:
             total_pages = 1
             total_records = record_count
+
+        if total_pages > max_pages:
+            LOGGER.warning(
+                '%s - calculated total pages (%s) exceeds max_pages (%s); pagination will stop with an error if this limit is crossed.',
+                stream_name,
+                total_pages,
+                max_pages,
+            )
 
         # Loop thru parent batch records for each children objects (if should stream)
         children = endpoint_config.get('children')
@@ -262,7 +349,8 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
                             bookmark_type=child_endpoint_config.get('bookmark_type'),
                             id_fields=child_endpoint_config.get('id_fields'),
                             parent=child_endpoint_config.get('parent'),
-                            parent_id=parent_id)
+                            parent_id=parent_id,
+                            request_budget=request_budget)
                         LOGGER.info('Synced: {}, parent_id: {}, total_records: {}'.format(
                             child_stream_name, 
                             parent_id,
@@ -279,6 +367,25 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
             stream_name,
             page,
             total_pages))
+
+        if len(transformed_data) < page_size:
+            LOGGER.info(
+                '%s - stopping pagination at page %s because returned records (%s) are less than page size (%s).',
+                stream_name,
+                page,
+                len(transformed_data),
+                page_size,
+            )
+            break
+
+        if bookmark_field and record_count == 0:
+            LOGGER.warning(
+                '%s - no new records processed at page %s for bookmark stream; stopping to avoid non-progressing pagination.',
+                stream_name,
+                page,
+            )
+            break
+
         page = page + 1
 
     # Return total_records across all batches
@@ -336,6 +443,9 @@ def sync(client, config, catalog, state, start_date):
     # last_stream = Previous currently synced stream, if the load was interrupted
     last_stream = singer.get_currently_syncing(state)
     LOGGER.info('last/currently syncing stream: {}'.format(last_stream))
+
+    # Shared across every stream (and their child streams) for this extraction.
+    request_budget = RequestBudget()
 
     # endpoints: API URL endpoints to be called
     # properties:
@@ -460,7 +570,8 @@ def sync(client, config, catalog, state, start_date):
                 bookmark_query_field=endpoint_config.get('bookmark_query_field'),
                 bookmark_field=endpoint_config.get('bookmark_field'),
                 bookmark_type=endpoint_config.get('bookmark_type'),
-                id_fields=endpoint_config.get('id_fields'))
+                id_fields=endpoint_config.get('id_fields'),
+                request_budget=request_budget)
 
             update_currently_syncing(state, None)
             LOGGER.info('Synced: {}, total_records: {}'.format(
