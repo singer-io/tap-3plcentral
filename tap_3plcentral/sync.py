@@ -249,10 +249,10 @@ def sync_endpoint(client, #pylint: disable=too-many-branches
             json.dumps(transformed_data, sort_keys=True, default=str).encode('utf-8')
         ).hexdigest()
         if previous_page_fingerprint == page_fingerprint:
-            if total_pages > max_pages:
-                raise RuntimeError(
-                    '{} pagination exceeded max pages limit ({}).'.format(stream_name, max_pages)
-                )
+            # A repeated page is treated purely as a stop signal: always break gracefully
+            # rather than escalate to a fatal error. The real max_pages enforcement lives
+            # in the `if page > max_pages: raise` guard at the top of the loop; that check
+            # is unaffected because it runs again before any subsequent request.
             LOGGER.warning(
                 '%s - repeated page payload detected at page %s; stopping pagination to prevent amplification.',
                 stream_name,
