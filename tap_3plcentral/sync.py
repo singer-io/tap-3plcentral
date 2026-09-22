@@ -26,6 +26,9 @@ class RequestBudget:
         self.max_requests = max_requests
         self.request_count = 0
 
+    def remaining(self):
+        return self.max_requests - self.request_count
+
     def consume(self, stream_name):
         if self.request_count >= self.max_requests:
             raise RuntimeError(
