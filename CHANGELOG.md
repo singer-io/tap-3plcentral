@@ -1,4 +1,9 @@
 # Changelog
+## 2.0.1
+  * Harden pagination safety checks to prevent amplification and infinite-loop patterns. [#19](https://github.com/singer-io/tap-3plcentral/pull/19)
+  * Treat repeated-page payload detection as a graceful pagination stop instead of a fatal extraction error.
+  * Add/adjust pagination safety unit tests to isolate max-pages enforcement and cover repeated-page behavior.
+
 ## 2.0.0
   * Update python version. [#13](https://github.com/singer-io/tap-3plcentral/pull/13)
   * Update bookmark logic
