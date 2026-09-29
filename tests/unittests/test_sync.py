@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch, call
 
 import singer
 from tap_3plcentral.sync import (
+    RequestBudget,
     get_bookmark,
     write_bookmark,
     write_schema,
@@ -500,6 +501,221 @@ class TestSync(unittest.TestCase):
         # Should return without error
         result = sync(mock_client, config, mock_catalog, state, "2019-01-01T00:00:00Z")
         self.assertIsNone(result)
+
+
+class TestSyncEndpointPaginationSafety(unittest.TestCase):
+    """Security-oriented pagination guard tests for sync_endpoint."""
+
+    @patch("tap_3plcentral.sync.process_records", return_value=(None, 1))
+    @patch("tap_3plcentral.sync.write_schema")
+    @patch("tap_3plcentral.sync.transform_json")
+    def test_sync_endpoint_stops_on_short_page_even_with_large_totalresults(
+        self,
+        mock_transform_json,
+        _mock_write_schema,
+        _mock_process_records,
+    ):
+        """Stops after first short page instead of trusting inflated TotalResults."""
+        mock_transform_json.return_value = {"resource_list": [{"ReceiveItemId": 1}]}
+
+        client = MagicMock()
+        client.get.return_value = {
+            "TotalResults": 1000000000,
+            "ResourceList": [{"ReceiveItemId": 1}],
+        }
+
+        sync_endpoint(
+            client=client,
+            catalog=MagicMock(),
+            state={},
+            start_date="2026-01-01T00:00:00Z",
+            stream_name="inventory",
+            path="inventory",
+            endpoint_config={"params": {"pgsiz": 200}},
+            data_key="ResourceList",
+            static_params={"pgsiz": 200},
+        )
+
+        self.assertEqual(client.get.call_count, 1)
+
+    @patch("tap_3plcentral.sync.process_records", return_value=(None, 200))
+    @patch("tap_3plcentral.sync.write_schema")
+    @patch("tap_3plcentral.sync.transform_json")
+    def test_sync_endpoint_raises_when_page_limit_exceeded(
+        self,
+        mock_transform_json,
+        _mock_write_schema,
+        _mock_process_records,
+    ):
+        """Raises when calculated page count exceeds enforced page limit.
+
+        Each page returns distinct content (embedding the page number) so the
+        repeated-page fingerprint guard never fires. This isolates the test to
+        the top-of-loop `if page > max_pages: raise` guard, which is what this
+        test is meant to exercise.
+        """
+
+        def make_page(pgnum):
+            # Full-size (pgsiz=200) pages so the short-page guard doesn't stop
+            # pagination first; content embeds pgnum so each page differs.
+            return {
+                "TotalResults": 1000000000,
+                "ResourceList": [
+                    {"ReceiveItemId": pgnum * 1000 + i} for i in range(200)
+                ],
+            }
+
+        # transform_json output varies with the input data so successive pages
+        # never produce identical fingerprints.
+        mock_transform_json.side_effect = lambda data, stream_name, key: {
+            "resource_list": data["ResourceList"]
+        }
+
+        client = MagicMock()
+        client.get.side_effect = [make_page(1), make_page(2), make_page(3)]
+
+        with self.assertRaises(RuntimeError):
+            sync_endpoint(
+                client=client,
+                catalog=MagicMock(),
+                state={},
+                start_date="2026-01-01T00:00:00Z",
+                stream_name="inventory",
+                path="inventory",
+                endpoint_config={"params": {"pgsiz": 200}, "max_pages": 2},
+                data_key="ResourceList",
+                static_params={"pgsiz": 200},
+            )
+
+        # page 3 exceeds max_pages=2 and raises before a 3rd client.get call is made
+        self.assertEqual(client.get.call_count, 2)
+
+    @patch("tap_3plcentral.sync.process_records", return_value=(None, 200))
+    @patch("tap_3plcentral.sync.write_schema")
+    @patch("tap_3plcentral.sync.transform_json")
+    def test_sync_endpoint_stops_when_totalresults_invalid(
+        self,
+        mock_transform_json,
+        _mock_write_schema,
+        _mock_process_records,
+    ):
+        """Does not paginate on invalid TotalResults values."""
+        mock_transform_json.return_value = {
+            "resource_list": [{"ReceiveItemId": i} for i in range(200)]
+        }
+
+        client = MagicMock()
+        client.get.return_value = {
+            "TotalResults": "not-an-int",
+            "ResourceList": [{"ReceiveItemId": i} for i in range(200)],
+        }
+
+        sync_endpoint(
+            client=client,
+            catalog=MagicMock(),
+            state={},
+            start_date="2026-01-01T00:00:00Z",
+            stream_name="inventory",
+            path="inventory",
+            endpoint_config={"params": {"pgsiz": 200}},
+            data_key="ResourceList",
+            static_params={"pgsiz": 200},
+        )
+
+        self.assertEqual(client.get.call_count, 1)
+
+    @patch("tap_3plcentral.sync.process_records", return_value=(None, 200))
+    @patch("tap_3plcentral.sync.write_schema")
+    @patch("tap_3plcentral.sync.transform_json")
+    def test_sync_endpoint_repeated_page_always_breaks_gracefully(
+        self,
+        mock_transform_json,
+        _mock_write_schema,
+        _mock_process_records,
+    ):
+        """Repeated-page detection must break gracefully, never raise.
+
+        Even when the (already-superseded) calculated total_pages exceeds
+        max_pages, detecting a duplicate page payload should stop pagination
+        cleanly instead of escalating to a fatal RuntimeError. A crash here
+        would abort the entire extraction (all other selected streams),
+        which is strictly worse than the graceful stop this guard is meant
+        to provide.
+        """
+        mock_transform_json.return_value = {
+            "resource_list": [{"ReceiveItemId": i} for i in range(200)]
+        }
+
+        client = MagicMock()
+        # Identical payload on every call -> repeated-page fingerprint matches
+        # starting at page 2. TotalResults is set deliberately high so that
+        # total_pages (5,000,000) > max_pages (2), which used to trigger the
+        # erroneous nested raise.
+        client.get.return_value = {
+            "TotalResults": 1000000000,
+            "ResourceList": [{"ReceiveItemId": i} for i in range(200)],
+        }
+
+        # Should not raise; should stop after the repeated page is detected.
+        sync_endpoint(
+            client=client,
+            catalog=MagicMock(),
+            state={},
+            start_date="2026-01-01T00:00:00Z",
+            stream_name="inventory",
+            path="inventory",
+            endpoint_config={"params": {"pgsiz": 200}, "max_pages": 2},
+            data_key="ResourceList",
+            static_params={"pgsiz": 200},
+        )
+
+        # page 1 sets the fingerprint, page 2's identical payload triggers the
+        # graceful break before a 3rd request would ever be made.
+        self.assertEqual(client.get.call_count, 2)
+
+    @patch("tap_3plcentral.sync.process_records", return_value=(None, 1))
+    @patch("tap_3plcentral.sync.write_schema")
+    @patch("tap_3plcentral.sync.transform_json")
+    def test_request_budget_is_shared_across_streams(
+        self,
+        mock_transform_json,
+        _mock_write_schema,
+        _mock_process_records,
+    ):
+        """A shared budget is consumed across separate sync_endpoint calls (parent/child fan-out)."""
+        mock_transform_json.return_value = {"resource_list": [{"ReceiveItemId": 1}]}
+
+        client = MagicMock()
+        client.get.return_value = {
+            "TotalResults": 1,
+            "ResourceList": [{"ReceiveItemId": 1}],
+        }
+
+        budget = RequestBudget(max_requests=2)
+
+        def run_stream():
+            sync_endpoint(
+                client=client,
+                catalog=MagicMock(),
+                state={},
+                start_date="2026-01-01T00:00:00Z",
+                stream_name="inventory",
+                path="inventory",
+                endpoint_config={"params": {"pgsiz": 200}},
+                data_key="ResourceList",
+                static_params={"pgsiz": 200},
+                request_budget=budget,
+            )
+
+        run_stream()
+        run_stream()
+
+        # Third call must fail because the budget is shared, not reset per call.
+        with self.assertRaises(RuntimeError):
+            run_stream()
+
+        self.assertEqual(client.get.call_count, 2)
+        self.assertEqual(budget.request_count, 2)
 
 
 if __name__ == "__main__":
